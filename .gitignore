@@ -90,3 +90,6 @@ Desktop.ini
 ### Firebase ###
 firebase-debug.log
 firebase-debug.*.log
+
+
+lib/dev_profile_main.dart
