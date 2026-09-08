@@ -57,6 +57,7 @@ class DefaultFirebaseOptions {
     projectId: 'taskflow-flutter-3b06a',
     storageBucket: 'taskflow-flutter-3b06a.firebasestorage.app',
   );
+
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyCkrMhtEaWXkiIJREkDSHLZ433T1uE4OH8',
     appId: '1:374374670661:ios:72feaaddd8169535cede2c',
@@ -65,6 +66,7 @@ class DefaultFirebaseOptions {
     storageBucket: 'taskflow-flutter-3b06a.firebasestorage.app',
     iosBundleId: 'com.example.taskFlow',
   );
+
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyCkrMhtEaWXkiIJREkDSHLZ433T1uE4OH8',
     appId: '1:374374670661:ios:72feaaddd8169535cede2c',
