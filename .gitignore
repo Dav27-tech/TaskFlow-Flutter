@@ -1,92 +1,45 @@
-# Created by https://www.toptal.com/developers/gitignore
-# Edit at https://www.toptal.com/developers/gitignore?templates=dart,flutter,androidstudio,visualstudiocode
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
 
-### Dart ###
-.dart_tool/
-.packages
-build/
-.pub/
-.pub-cache/
-
-# Generated documentation
-**/doc/api/
-
-# Flutter generated files
-.flutter-plugins
-.flutter-plugins-dependencies
-
-### Flutter ###
-
-# Android
-**/android/.gradle
-**/android/captures/
-**/android/local.properties
-**/android/key.properties
-**/android/**/GeneratedPluginRegistrant.java
-
-# Android build files
-**/android/app/debug
-**/android/app/profile
-**/android/app/release
-
-# iOS / Xcode
-**/ios/Pods/
-**/ios/.symlinks/
-**/ios/Flutter/.last_build_id
-**/ios/Flutter/Generated.xcconfig
-**/ios/Flutter/flutter_export_environment.sh
-**/ios/Flutter/App.framework
-**/ios/Flutter/Flutter.framework
-**/ios/Flutter/flutter_assets/
-**/ios/Runner/GeneratedPluginRegistrant.*
-
-### AndroidStudio / IntelliJ ###
-.idea/
+# IntelliJ related
 *.iml
 *.ipr
 *.iws
+.idea/
 
-### Visual Studio Code ###
-.vscode/*
-!.vscode/settings.json
-!.vscode/launch.json
-!.vscode/tasks.json
-!.vscode/extensions.json
-.history
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
 
-### Xcode ###
-**/ios/**/xcuserdata/
-**/ios/**/DerivedData/
-*.xcuserstate
-*.moved-aside
-*.pbxuser
-*.mode1v3
-*.mode2v3
-*.perspectivev3
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
 
-### macOS ###
-.DS_Store
-.AppleDouble
-.LSOverride
+# Symbolication related
+app.*.symbols
 
-### Windows ###
-Thumbs.db
-ehthumbs.db
-Desktop.ini
+# Obfuscation related
+app.*.map.json
 
-### Logs ###
-*.log
-
-### Temporary files ###
-*.swp
-*.swo
-*~
-
-### Environment ###
-.env
-.env.*
-!.env.example
-
-### Firebase ###
-firebase-debug.log
-firebase-debug.*.log
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release

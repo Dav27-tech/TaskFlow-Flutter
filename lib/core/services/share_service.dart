@@ -1,13 +1,14 @@
 import 'dart:io';
-
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:taskflow/core/errors/exceptions.dart';
 
 abstract class ShareService {
   Future<void> shareJsonFile({
     required String jsonContent,
     required String fileName,
-    required String subject,
-    required String text,
+    String? subject,
+    String? text,
   });
 }
 
@@ -16,23 +17,22 @@ class ShareServiceImpl implements ShareService {
   Future<void> shareJsonFile({
     required String jsonContent,
     required String fileName,
-    required String subject,
-    required String text,
+    String? subject,
+    String? text,
   }) async {
-    final tempFile = await _writeTempFile(jsonContent, fileName);
-    await SharePlus.instance.share(
-      ShareParams(
-        subject: subject,
-        text: text,
-        files: [XFile(tempFile.path)],
-      ),
-    );
-  }
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final file = File('${tempDir.path}/$fileName');
+      await file.writeAsString(jsonContent);
 
-  Future<File> _writeTempFile(String content, String fileName) async {
-    final dir = await Directory.systemTemp.createTemp('taskflow_');
-    final file = File('${dir.path}/$fileName');
-    await file.writeAsString(content);
-    return file;
+      final xFile = XFile(file.path, mimeType: 'application/json');
+      await Share.shareXFiles(
+        [xFile],
+        subject: subject ?? 'TaskFlow Project Export',
+        text: text ?? 'Here is the exported project data from TaskFlow.',
+      );
+    } catch (e) {
+      throw ExportException('Impossible de créer ou de partager le fichier JSON : $e');
+    }
   }
 }

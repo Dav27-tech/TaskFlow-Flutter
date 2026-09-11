@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:task_flow/core/constants/app_colors.dart';
-import 'package:task_flow/core/widgets/confirm_dialog.dart';
-import 'package:task_flow/core/widgets/error_view.dart';
-import 'package:task_flow/core/widgets/loading_indicator.dart';
-import 'package:task_flow/features/projects/domain/entities/project.dart';
-import 'package:task_flow/features/projects/presentation/providers/project_provider.dart';
-import 'package:task_flow/features/projects/presentation/widgets/member_tile.dart';
-import 'package:task_flow/features/projects/presentation/widgets/project_menu.dart';
-import 'package:task_flow/features/projects/presentation/widgets/project_summary.dart';
+import 'package:taskflow/core/constants/app_colors.dart';
+import 'package:taskflow/core/widgets/confirm_dialog.dart';
+import 'package:taskflow/core/widgets/error_view.dart';
+import 'package:taskflow/core/widgets/loading_indicator.dart';
+import 'package:taskflow/features/projects/domain/entities/project.dart';
+import 'package:taskflow/features/projects/presentation/providers/project_provider.dart';
+import 'package:taskflow/features/projects/presentation/widgets/member_tile.dart';
+import 'package:taskflow/features/projects/presentation/widgets/project_menu.dart';
+import 'package:taskflow/features/projects/presentation/widgets/project_summary.dart';
 
 class ProjectDetailsPage extends ConsumerStatefulWidget {
   final String projectId;
@@ -74,10 +74,10 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
       loading: () => widget.initialProject != null
           ? _buildContent(context, widget.initialProject!, currentUserId, membersAsync)
           : const Scaffold(
-              body: LoadingIndicator(message: 'Loading project details...'),
+              body: LoadingIndicator(message: 'Chargement des détails du projet...'),
             ),
       error: (error, stack) => Scaffold(
-        appBar: AppBar(title: const Text('Project Details')),
+        appBar: AppBar(title: const Text('Détails du projet')),
         body: ErrorView(
           message: error.toString().replaceFirst('AppException: ', ''),
           onRetry: () => ref.invalidate(projectDetailsProvider(widget.projectId)),
@@ -133,11 +133,11 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
                   tabs: const [
                     Tab(
                       icon: Icon(Icons.check_box_outlined, size: 20),
-                      text: 'Tasks',
+                      text: 'Tâches',
                     ),
                     Tab(
                       icon: Icon(Icons.people_alt_outlined, size: 20),
-                      text: 'Members',
+                      text: 'Membres',
                     ),
                   ],
                 ),
@@ -175,7 +175,7 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
               TextButton.icon(
                 onPressed: () => _handleExportJson(project.id),
                 icon: const Icon(Icons.file_download_outlined, size: 18),
-                label: const Text('Export JSON'),
+                label: const Text('Exporter en JSON'),
               ),
             ],
           ),
@@ -195,7 +195,7 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.08),
+                        color: AppColors.primary.withOpacity(0.08),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -206,7 +206,7 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      '${project.completedTasksCount} of ${project.tasksCount} tasks completed',
+                      '${project.completedTasksCount} tâche(s) terminée(s) sur ${project.tasksCount}',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -215,7 +215,7 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
                     ),
                     const SizedBox(height: 6),
                     const Text(
-                      'Tasks are managed collaboratively by project members.',
+                      'Les tâches sont gérées collectivement par les membres du projet.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 13,
@@ -246,8 +246,8 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Project Members',
-                style: TextStyle(
+                'Membres du projet',
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
@@ -259,7 +259,7 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
                     context.push('/projects/${project.id}/members', extra: project);
                   },
                   icon: const Icon(Icons.settings_outlined, size: 18),
-                  label: const Text('Manage'),
+                  label: const Text('Gérer'),
                 ),
             ],
           ),
@@ -268,7 +268,7 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
             child: membersAsync.when(
               data: (members) {
                 if (members.isEmpty) {
-                  return const Center(child: Text('No members found.'));
+                  return const Center(child: Text('Aucun membre trouvé.'));
                 }
                 return ListView.builder(
                   itemCount: members.length,
@@ -303,9 +303,9 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
   void _handleDeleteProject(Project project) async {
     final confirmed = await ConfirmDialog.show(
       context,
-      title: 'Delete Project',
-      content: 'Are you sure you want to delete "${project.name}"? This action cannot be undone and all tasks will be permanently removed.',
-      confirmText: 'Delete',
+      title: 'Supprimer le projet',
+      content: 'Voulez-vous vraiment supprimer « ${project.name} » ? Cette action est irréversible et toutes les tâches seront définitivement supprimées.',
+      confirmText: 'Supprimer',
       isDestructive: true,
     );
 
@@ -323,9 +323,9 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
   void _handleLeaveProject(Project project) async {
     final confirmed = await ConfirmDialog.show(
       context,
-      title: 'Leave Project',
-      content: 'Are you sure you want to leave "${project.name}"? You will lose access to this project and its tasks.',
-      confirmText: 'Leave',
+      title: 'Quitter le projet',
+      content: 'Voulez-vous vraiment quitter « ${project.name} » ? Vous perdrez l’accès à ce projet et à ses tâches.',
+      confirmText: 'Quitter',
       isDestructive: true,
     );
 
@@ -343,10 +343,10 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
   void _handleRemoveMember(Project project, String memberId) async {
     final confirmed = await ConfirmDialog.show(
       context,
-      title: 'Remove Member',
-      content: 'Are you sure you want to remove this member from this project?',
-      confirmText: 'Remove Member',
-      cancelText: 'Cancel',
+      title: 'Retirer le membre',
+      content: 'Voulez-vous vraiment retirer ce membre du projet ?',
+      confirmText: 'Retirer le membre',
+      cancelText: 'Annuler',
       isDestructive: true,
     );
 

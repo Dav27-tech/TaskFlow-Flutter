@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:task_flow/features/projects/domain/entities/project.dart';
+import 'package:taskflow/features/projects/domain/entities/project.dart';
 
 class ProjectModel extends Project {
   const ProjectModel({

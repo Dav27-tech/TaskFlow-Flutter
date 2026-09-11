@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:task_flow/core/constants/app_colors.dart';
-import 'package:task_flow/features/projects/domain/entities/project.dart';
+import 'package:taskflow/core/constants/app_colors.dart';
+import 'package:taskflow/features/projects/domain/entities/project.dart';
 
 class ProjectCard extends StatelessWidget {
   final Project project;
@@ -58,7 +58,7 @@ class ProjectCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          isOwner ? 'OWNER' : 'MEMBER',
+                          isOwner ? 'PROPRIÉTAIRE' : 'MEMBRE',
                           style: TextStyle(
                             color: isOwner
                                 ? AppColors.ownerBadgeText
@@ -74,11 +74,11 @@ class ProjectCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: _getStatusColor(project.status).withValues(alpha: 0.12),
+                      color: _getStatusColor(project.status).withOpacity(0.12),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      project.status.toUpperCase(),
+                      _getStatusLabel(project.status),
                       style: TextStyle(
                         color: _getStatusColor(project.status),
                         fontSize: 11,
@@ -140,7 +140,7 @@ class ProjectCard extends StatelessWidget {
                           size: 16, color: AppColors.textSecondary),
                       const SizedBox(width: 4),
                       Text(
-                        '${project.completedTasksCount}/${project.tasksCount} tasks',
+                        '${project.completedTasksCount}/${project.tasksCount} tâches',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -152,7 +152,7 @@ class ProjectCard extends StatelessWidget {
                           size: 16, color: AppColors.textSecondary),
                       const SizedBox(width: 4),
                       Text(
-                        '${project.membersCount > 0 ? project.membersCount : (project.memberIds.isNotEmpty ? project.memberIds.length : 1)} members',
+                        '${project.membersCount > 0 ? project.membersCount : (project.memberIds.isNotEmpty ? project.memberIds.length : 1)} membres',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -190,6 +190,21 @@ class ProjectCard extends StatelessWidget {
       case 'active':
       default:
         return AppColors.primary;
+    }
+  }
+
+  String _getStatusLabel(String status) {
+    switch (status.toLowerCase()) {
+      case 'completed':
+      case 'done':
+        return 'TERMINÉ';
+      case 'in_progress':
+        return 'EN COURS';
+      case 'archived':
+        return 'ARCHIVÉ';
+      case 'active':
+      default:
+        return 'ACTIF';
     }
   }
 }

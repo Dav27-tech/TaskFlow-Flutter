@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:task_flow/core/constants/app_colors.dart';
-import 'package:task_flow/features/projects/domain/entities/project_member.dart';
+import 'package:taskflow/core/constants/app_colors.dart';
+import 'package:taskflow/features/projects/domain/entities/project_member.dart';
 
 class MemberTile extends StatelessWidget {
   final ProjectMember member;
@@ -72,7 +72,7 @@ class MemberTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
-              member.role.toUpperCase(),
+              member.isOwner ? 'PROPRIÉTAIRE' : 'MEMBRE',
               style: TextStyle(
                 color: member.isOwner
                     ? AppColors.ownerBadgeText
@@ -101,7 +101,7 @@ class MemberTile extends StatelessWidget {
                     children: [
                       Icon(Icons.person_remove_outlined, size: 18, color: AppColors.error),
                       SizedBox(width: 8),
-                      Text('Remove from project',
+                      Text('Retirer du projet',
                           style: TextStyle(fontSize: 13, color: AppColors.error)),
                     ],
                   ),

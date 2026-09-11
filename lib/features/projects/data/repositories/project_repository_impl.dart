@@ -1,12 +1,12 @@
 import 'dart:convert';
-import 'package:task_flow/core/errors/exceptions.dart';
-import 'package:task_flow/core/services/share_service.dart';
-import 'package:task_flow/core/utils/invitation_code_generator.dart';
-import 'package:task_flow/features/projects/data/datasources/project_remote_datasource.dart';
-import 'package:task_flow/features/projects/data/models/project_model.dart';
-import 'package:task_flow/features/projects/domain/entities/project.dart';
-import 'package:task_flow/features/projects/domain/entities/project_member.dart';
-import 'package:task_flow/features/projects/domain/repositories/project_repository.dart';
+import 'package:taskflow/core/errors/exceptions.dart';
+import 'package:taskflow/core/services/share_service.dart';
+import 'package:taskflow/core/utils/invitation_code_generator.dart';
+import 'package:taskflow/features/projects/data/datasources/project_remote_datasource.dart';
+import 'package:taskflow/features/projects/data/models/project_model.dart';
+import 'package:taskflow/features/projects/domain/entities/project.dart';
+import 'package:taskflow/features/projects/domain/entities/project_member.dart';
+import 'package:taskflow/features/projects/domain/repositories/project_repository.dart';
 
 class ProjectRepositoryImpl implements ProjectRepository {
   final ProjectRemoteDataSource remoteDataSource;
@@ -123,7 +123,7 @@ class ProjectRepositoryImpl implements ProjectRepository {
     } on AppException {
       rethrow;
     } catch (e) {
-      throw ExportException('Failed to export project tasks as JSON: $e');
+      throw ExportException('Impossible d’exporter les tâches du projet au format JSON : $e');
     }
   }
 }

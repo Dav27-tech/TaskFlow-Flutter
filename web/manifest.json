@@ -1,11 +1,11 @@
 {
-    "name": "task_flow",
-    "short_name": "task_flow",
+    "name": "taskflow",
+    "short_name": "taskflow",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "TaskFlow — Application collaborative de gestion des tâches avec Flutter, Firebase Authentication, Cloud Firestore et Clean Architecture, avec synchronisation en temps réel et export JSON.",
+    "description": "A new Flutter project.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

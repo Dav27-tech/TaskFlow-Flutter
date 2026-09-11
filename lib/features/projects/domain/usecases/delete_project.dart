@@ -1,5 +1,5 @@
-import 'package:task_flow/core/errors/exceptions.dart';
-import 'package:task_flow/features/projects/domain/repositories/project_repository.dart';
+import 'package:taskflow/core/errors/exceptions.dart';
+import 'package:taskflow/features/projects/domain/repositories/project_repository.dart';
 
 class DeleteProjectUseCase {
   final ProjectRepository repository;
@@ -12,7 +12,7 @@ class DeleteProjectUseCase {
     required String currentUserId,
   }) async {
     if (ownerId != currentUserId) {
-      throw const PermissionDeniedException('Only the project owner can delete this project.');
+      throw const PermissionDeniedException('Seul le propriétaire du projet peut le supprimer.');
     }
     await repository.deleteProject(projectId);
   }

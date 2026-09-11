@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:task_flow/core/constants/app_constants.dart';
-import 'package:task_flow/core/errors/exceptions.dart';
-import 'package:task_flow/features/projects/data/models/project_member_model.dart';
-import 'package:task_flow/features/projects/data/models/project_model.dart';
-import 'package:task_flow/features/projects/data/models/task_model.dart';
+import 'package:taskflow/core/constants/app_constants.dart';
+import 'package:taskflow/core/errors/exceptions.dart';
+import 'package:taskflow/features/projects/data/models/project_member_model.dart';
+import 'package:taskflow/features/projects/data/models/project_model.dart';
+import 'package:taskflow/features/tasks/data/models/task_model.dart';
 
 abstract class ProjectRemoteDataSource {
   Stream<List<ProjectModel>> getProjectsStream({required String userId});
@@ -56,7 +56,7 @@ class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
         return snapshot.docs.map((doc) => ProjectModel.fromFirestore(doc)).toList();
       });
     } catch (e) {
-      throw ServerException('Failed to stream projects: $e');
+      throw ServerException('Impossible de charger les projets : $e');
     }
   }
 
@@ -65,7 +65,7 @@ class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
     try {
       final doc = await _projectsCollection.doc(projectId).get();
       if (!doc.exists) {
-        throw const NotFoundException('Project not found.');
+        throw const NotFoundException('Projet introuvable.');
       }
 
       // Fetch task statistics
@@ -96,7 +96,7 @@ class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
     } on AppException {
       rethrow;
     } catch (e) {
-      throw ServerException('Failed to get project: $e');
+      throw ServerException('Impossible de récupérer le projet : $e');
     }
   }
 
@@ -158,7 +158,7 @@ class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
       await batch.commit();
       return project;
     } catch (e) {
-      throw ServerException('Failed to create project atomically: $e');
+      throw ServerException('Impossible de créer le projet : $e');
     }
   }
 
@@ -167,7 +167,7 @@ class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
     try {
       await _projectsCollection.doc(project.id).update(project.toFirestore());
     } catch (e) {
-      throw ServerException('Failed to update project: $e');
+      throw ServerException('Impossible de mettre à jour le projet : $e');
     }
   }
 
@@ -191,7 +191,7 @@ class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
 
       await batch.commit();
     } catch (e) {
-      throw ServerException('Failed to delete project: $e');
+      throw ServerException('Impossible de supprimer le projet : $e');
     }
   }
 
@@ -206,7 +206,7 @@ class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
         return snapshot.docs.map((doc) => ProjectMemberModel.fromFirestore(doc)).toList();
       });
     } catch (e) {
-      throw ServerException('Failed to stream project members: $e');
+      throw ServerException('Impossible de charger les membres du projet : $e');
     }
   }
 
@@ -228,7 +228,7 @@ class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
 
       await batch.commit();
     } catch (e) {
-      throw ServerException('Failed to remove member: $e');
+      throw ServerException('Impossible de retirer le membre : $e');
     }
   }
 
@@ -250,7 +250,7 @@ class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
 
       await batch.commit();
     } catch (e) {
-      throw ServerException('Failed to leave project: $e');
+      throw ServerException('Impossible de quitter le projet : $e');
     }
   }
 
@@ -266,7 +266,7 @@ class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
       });
       return newCode;
     } catch (e) {
-      throw ServerException('Failed to regenerate invitation code: $e');
+      throw ServerException('Impossible de régénérer le code d’invitation : $e');
     }
   }
 
@@ -280,7 +280,7 @@ class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
 
       return snapshot.docs.map((doc) => TaskModel.fromFirestore(doc)).toList();
     } catch (e) {
-      throw ServerException('Failed to fetch tasks for project: $e');
+      throw ServerException('Impossible de récupérer les tâches du projet : $e');
     }
   }
 }

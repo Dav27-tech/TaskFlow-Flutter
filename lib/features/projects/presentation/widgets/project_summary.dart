@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:task_flow/core/constants/app_colors.dart';
-import 'package:task_flow/features/projects/domain/entities/project.dart';
+import 'package:taskflow/core/constants/app_colors.dart';
+import 'package:taskflow/features/projects/domain/entities/project.dart';
 
 class ProjectSummary extends StatelessWidget {
   final Project project;
@@ -22,7 +22,7 @@ class ProjectSummary extends StatelessWidget {
         border: Border.all(color: AppColors.border, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withOpacity(0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -55,7 +55,7 @@ class ProjectSummary extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      isOwner ? 'OWNER' : 'MEMBER',
+                      isOwner ? 'PROPRIÉTAIRE' : 'MEMBRE',
                       style: TextStyle(
                         color: isOwner
                             ? AppColors.ownerBadgeText
@@ -70,11 +70,11 @@ class ProjectSummary extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(project.status).withValues(alpha: 0.12),
+                  color: _getStatusColor(project.status).withOpacity(0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  project.status.toUpperCase(),
+                  _getStatusLabel(project.status),
                   style: TextStyle(
                     color: _getStatusColor(project.status),
                     fontSize: 11,
@@ -114,7 +114,7 @@ class ProjectSummary extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Overall Progress',
+                'Progression globale',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -152,7 +152,7 @@ class ProjectSummary extends StatelessWidget {
                 child: _buildMetricCard(
                   icon: Icons.task_alt_rounded,
                   color: AppColors.primary,
-                  title: 'Total Tasks',
+                  title: 'Tâches totales',
                   value: '${project.tasksCount}',
                 ),
               ),
@@ -161,7 +161,7 @@ class ProjectSummary extends StatelessWidget {
                 child: _buildMetricCard(
                   icon: Icons.check_circle_rounded,
                   color: AppColors.success,
-                  title: 'Completed',
+                  title: 'Terminées',
                   value: '${project.completedTasksCount}',
                 ),
               ),
@@ -170,7 +170,7 @@ class ProjectSummary extends StatelessWidget {
                 child: _buildMetricCard(
                   icon: Icons.groups_rounded,
                   color: AppColors.secondary,
-                  title: 'Members',
+                  title: 'Membres',
                   value: '${project.membersCount > 0 ? project.membersCount : (project.memberIds.isNotEmpty ? project.memberIds.length : 1)}',
                 ),
               ),
@@ -192,7 +192,7 @@ class ProjectSummary extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.backgroundLight,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
+        border: Border.all(color: AppColors.border.withOpacity(0.5)),
       ),
       child: Column(
         children: [
@@ -219,6 +219,21 @@ class ProjectSummary extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _getStatusLabel(String status) {
+    switch (status.toLowerCase()) {
+      case 'completed':
+      case 'done':
+        return 'TERMINÉ';
+      case 'in_progress':
+        return 'EN COURS';
+      case 'archived':
+        return 'ARCHIVÉ';
+      case 'active':
+      default:
+        return 'ACTIF';
+    }
   }
 
   Color _getStatusColor(String status) {

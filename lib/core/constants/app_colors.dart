@@ -3,30 +3,42 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  static const Color primary = Color(0xFF2878E8);
-  static const Color primaryLight = Color(0xFF8BB8FF);
-  static const Color primaryDark = Color(0xFF1D5FC5);
-  static const Color primaryContainer = Color(0xFFEAF2FF);
+  // Primary Palette (TaskFlow Signature Purple)
+  static const Color primary = Color(0xFF6C5CE7);
+  static const Color primaryLight = Color(0xFFA29BFE);
+  static const Color primaryDark = Color(0xFF4834D4);
+  static const Color primaryContainer = Color(0xFFEDE7F6);
 
-  static const Color secondary = Color(0xFF6C5CE7);
-  static const Color secondaryLight = Color(0xFFB9B3FF);
+  // Secondary & Accents
+  static const Color secondary = Color(0xFF00CEC9);
+  static const Color secondaryLight = Color(0xFF81ECEC);
+  static const Color accent = Color(0xFFFD79A8);
 
-  static const Color backgroundLight = Color(0xFFF7F9FC);
-  static const Color backgroundSurface = Color(0xFFFFFFFF);
-  static const Color divider = Color(0xFFE6EBF2);
-  static const Color border = Color(0xFFDCE3EE);
+  // Background & Neutral
+  static const Color backgroundLight = Color(0xFFF8F9FE);
+  static const Color surfaceLight = Colors.white;
+  static const Color cardBackground = Colors.white;
 
-  static const Color textPrimary = Color(0xFF162033);
-  static const Color textSecondary = Color(0xFF64748B);
-  static const Color textMuted = Color(0xFF94A3B8);
+  static const Color backgroundDark = Color(0xFF121420);
+  static const Color surfaceDark = Color(0xFF1B1E2E);
+  static const Color cardBackgroundDark = Color(0xFF23273A);
 
-  static const Color success = Color(0xFF16A34A);
-  static const Color warning = Color(0xFFF59E0B);
-  static const Color error = Color(0xFFDC2626);
-  static const Color info = Color(0xFF2563EB);
+  // Status & Feedback
+  static const Color success = Color(0xFF00B894);
+  static const Color warning = Color(0xFFFDCB6E);
+  static const Color error = Color(0xFFFF7675);
+  static const Color info = Color(0xFF0984E3);
 
-  static const Color ownerBadgeBackground = Color(0xFFE0F2FE);
-  static const Color ownerBadgeText = Color(0xFF0F766E);
-  static const Color memberBadgeBackground = Color(0xFFE0E7FF);
-  static const Color memberBadgeText = Color(0xFF4338CA);
+  // Role Badges
+  static const Color ownerBadgeBackground = Color(0xFFFFF3E0);
+  static const Color ownerBadgeText = Color(0xFFE67E22);
+  static const Color memberBadgeBackground = Color(0xFFE8F4FD);
+  static const Color memberBadgeText = Color(0xFF2980B9);
+
+  // Neutral Greys
+  static const Color textPrimary = Color(0xFF2D3436);
+  static const Color textSecondary = Color(0xFF636E72);
+  static const Color textMuted = Color(0xFFB2BEC3);
+  static const Color border = Color(0xFFDFE6E9);
+  static const Color divider = Color(0xFFF1F2F6);
 }

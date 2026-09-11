@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:task_flow/core/constants/app_colors.dart';
-import 'package:task_flow/core/constants/app_constants.dart';
-import 'package:task_flow/core/widgets/custom_button.dart';
-import 'package:task_flow/core/widgets/custom_text_field.dart';
-import 'package:task_flow/features/projects/domain/entities/project.dart';
-import 'package:task_flow/features/projects/presentation/providers/project_provider.dart';
+import 'package:taskflow/core/constants/app_colors.dart';
+import 'package:taskflow/core/constants/app_constants.dart';
+import 'package:taskflow/core/widgets/custom_button.dart';
+import 'package:taskflow/core/widgets/custom_text_field.dart';
+import 'package:taskflow/features/projects/domain/entities/project.dart';
+import 'package:taskflow/features/projects/presentation/providers/project_provider.dart';
 
 class ProjectFormPage extends ConsumerStatefulWidget {
   final Project? initialProject;
@@ -51,7 +51,7 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
-        title: Text(widget.isEditMode ? 'Edit Project' : 'New Project'),
+        title: Text(widget.isEditMode ? 'Modifier le projet' : 'Nouveau projet'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -65,9 +65,9 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryContainer.withValues(alpha: 0.5),
+                    color: AppColors.primaryContainer.withOpacity(0.5),
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.3)),
+                    border: Border.all(color: AppColors.primaryLight.withOpacity(0.3)),
                   ),
                   child: const Row(
                     children: [
@@ -75,7 +75,7 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
                       SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'You will automatically be assigned as the OWNER of this project upon creation.',
+                          'Vous serez automatiquement désigné comme PROPRIÉTAIRE de ce projet lors de sa création.',
                           style: TextStyle(
                             fontSize: 13,
                             color: AppColors.primaryDark,
@@ -92,15 +92,15 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
               // Project Name Field
               CustomTextField(
                 controller: _nameController,
-                label: 'Project Name *',
-                hintText: 'e.g. Mobile App Redesign',
+                label: 'Nom du projet *',
+                hintText: 'ex. Refonte de l\'application mobile',
                 prefixIcon: const Icon(Icons.folder_outlined, color: AppColors.textSecondary),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a project name';
+                    return 'Veuillez saisir un nom de projet';
                   }
                   if (value.trim().length < 3) {
-                    return 'Project name must be at least 3 characters long';
+                    return 'Le nom du projet doit comporter au moins 3 caractères';
                   }
                   return null;
                 },
@@ -111,7 +111,7 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
               CustomTextField(
                 controller: _descriptionController,
                 label: 'Description',
-                hintText: 'Describe the main goals and scope of this project...',
+                hintText: 'Décrivez les objectifs principaux et le périmètre de ce projet...',
                 maxLines: 4,
                 minLines: 3,
               ),
@@ -120,7 +120,7 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
               // Status Dropdown (Edit mode only)
               if (widget.isEditMode) ...[
                 const Text(
-                  'Status',
+                  'Statut',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -140,10 +140,10 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
                       value: _selectedStatus,
                       isExpanded: true,
                       items: const [
-                        DropdownMenuItem(value: 'active', child: Text('Active')),
-                        DropdownMenuItem(value: 'in_progress', child: Text('In Progress')),
-                        DropdownMenuItem(value: 'completed', child: Text('Completed')),
-                        DropdownMenuItem(value: 'archived', child: Text('Archived')),
+                        DropdownMenuItem(value: 'active', child: Text('Actif')),
+                        DropdownMenuItem(value: 'in_progress', child: Text('En cours')),
+                        DropdownMenuItem(value: 'completed', child: Text('Terminé')),
+                        DropdownMenuItem(value: 'archived', child: Text('Archivé')),
                       ],
                       onChanged: (value) {
                         if (value != null) {
@@ -162,14 +162,14 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
 
               // Action Buttons
               CustomButton(
-                text: widget.isEditMode ? 'Save Changes' : 'Create Project',
+                text: widget.isEditMode ? 'Enregistrer les modifications' : 'Créer le projet',
                 isLoading: actionState.isLoading,
                 icon: widget.isEditMode ? Icons.check_rounded : Icons.add_rounded,
                 onPressed: _handleSubmit,
               ),
               const SizedBox(height: 12),
               CustomButton(
-                text: 'Cancel',
+                text: 'Annuler',
                 isOutlined: true,
                 backgroundColor: AppColors.textSecondary,
                 onPressed: () => context.pop(),

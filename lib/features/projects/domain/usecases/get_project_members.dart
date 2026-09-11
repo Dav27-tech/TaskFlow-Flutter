@@ -1,5 +1,5 @@
-import 'package:task_flow/features/projects/domain/entities/project_member.dart';
-import 'package:task_flow/features/projects/domain/repositories/project_repository.dart';
+import 'package:taskflow/features/projects/domain/entities/project_member.dart';
+import 'package:taskflow/features/projects/domain/repositories/project_repository.dart';
 
 class GetProjectMembersUseCase {
   final ProjectRepository repository;

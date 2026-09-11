@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:task_flow/core/constants/app_colors.dart';
-import 'package:task_flow/core/widgets/confirm_dialog.dart';
-import 'package:task_flow/core/widgets/error_view.dart';
-import 'package:task_flow/core/widgets/loading_indicator.dart';
-import 'package:task_flow/features/projects/domain/entities/project.dart';
-import 'package:task_flow/features/projects/presentation/providers/project_provider.dart';
-import 'package:task_flow/features/projects/presentation/widgets/member_tile.dart';
+import 'package:taskflow/core/constants/app_colors.dart';
+import 'package:taskflow/core/widgets/confirm_dialog.dart';
+import 'package:taskflow/core/widgets/error_view.dart';
+import 'package:taskflow/core/widgets/loading_indicator.dart';
+import 'package:taskflow/features/projects/domain/entities/project.dart';
+import 'package:taskflow/features/projects/presentation/providers/project_provider.dart';
+import 'package:taskflow/features/projects/presentation/widgets/member_tile.dart';
 
 class ManageMembersPage extends ConsumerStatefulWidget {
   final String projectId;
@@ -36,9 +36,9 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
       data: (project) => _buildPage(context, project, currentUserId, membersAsync),
       loading: () => widget.initialProject != null
           ? _buildPage(context, widget.initialProject!, currentUserId, membersAsync)
-          : const Scaffold(body: LoadingIndicator(message: 'Loading member management...')),
+          : const Scaffold(body: LoadingIndicator(message: 'Chargement de la gestion des membres...')),
       error: (error, stack) => Scaffold(
-        appBar: AppBar(title: const Text('Manage Members')),
+        appBar: AppBar(title: const Text('Gérer les membres')),
         body: ErrorView(
           message: error.toString().replaceFirst('AppException: ', ''),
           onRetry: () => ref.invalidate(projectDetailsProvider(widget.projectId)),
@@ -59,7 +59,7 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
-        title: const Text('Manage Members'),
+        title: const Text('Gérer les membres'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -79,7 +79,7 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
+                      color: AppColors.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.folder_outlined, color: AppColors.primary, size: 24),
@@ -118,7 +118,7 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
 
             // INVITATION CODE CARD
             const Text(
-              'Invitation Code',
+              'Code d’invitation',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -127,7 +127,7 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
             ),
             const SizedBox(height: 4),
             const Text(
-              'Share this code with team members to let them join this project.',
+              'Partagez ce code avec les membres de votre équipe pour leur permettre de rejoindre ce projet.',
               style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 12),
@@ -142,7 +142,7 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
+                    color: AppColors.primary.withOpacity(0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 6),
                   ),
@@ -174,7 +174,7 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
                         child: ElevatedButton.icon(
                           onPressed: () => _copyCodeToClipboard(displayedCode),
                           icon: const Icon(Icons.copy_rounded, size: 16),
-                          label: const Text('Copy Code'),
+                          label: const Text('Copier le code'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
                             foregroundColor: AppColors.primaryDark,
@@ -192,7 +192,7 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
                           child: OutlinedButton.icon(
                             onPressed: () => _handleRegenerateCode(project),
                             icon: const Icon(Icons.refresh_rounded, size: 16),
-                            label: const Text('Regenerate'),
+                            label: const Text('Régénérer'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.white,
                               side: const BorderSide(color: Colors.white60, width: 1.2),
@@ -216,7 +216,7 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'Project Members',
+                  'Membres du projet',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -225,7 +225,7 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
                 ),
                 membersAsync.maybeWhen(
                   data: (members) => Text(
-                    '${members.length} members',
+                    '${members.length} membre(s)',
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -241,7 +241,7 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
             membersAsync.when(
               data: (members) {
                 if (members.isEmpty) {
-                  return const Center(child: Text('No members in this project.'));
+                  return const Center(child: Text('Aucun membre dans ce projet.'));
                 }
 
                 return ListView.builder(
@@ -281,7 +281,7 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
           children: [
             Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
             SizedBox(width: 8),
-            Text('Invitation code copied to clipboard!'),
+            Text('Code d’invitation copié dans le presse-papiers !'),
           ],
         ),
         backgroundColor: AppColors.success,
@@ -294,11 +294,11 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
   void _handleRegenerateCode(Project project) async {
     final confirmed = await ConfirmDialog.show(
       context,
-      title: 'Regenerate Code',
+      title: 'Régénérer le code',
       content:
-          'Are you sure you want to regenerate the invitation code? The old code will immediately stop working.',
-      confirmText: 'Regenerate',
-      cancelText: 'Cancel',
+            'Voulez-vous vraiment régénérer le code d’invitation ? L’ancien code cessera immédiatement de fonctionner.',
+          confirmText: 'Régénérer',
+          cancelText: 'Annuler',
       isDestructive: false,
     );
 
@@ -319,10 +319,10 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
   void _handleRemoveMember(Project project, String memberId) async {
     final confirmed = await ConfirmDialog.show(
       context,
-      title: 'Remove Member',
-      content: 'Are you sure you want to remove this member from this project?',
-      confirmText: 'Remove Member',
-      cancelText: 'Cancel',
+      title: 'Retirer le membre',
+      content: 'Voulez-vous vraiment retirer ce membre du projet ?',
+      confirmText: 'Retirer le membre',
+      cancelText: 'Annuler',
       isDestructive: true,
     );
 

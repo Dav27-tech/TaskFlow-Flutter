@@ -1,5 +1,5 @@
-import 'package:task_flow/core/errors/exceptions.dart';
-import 'package:task_flow/features/projects/domain/repositories/project_repository.dart';
+import 'package:taskflow/core/errors/exceptions.dart';
+import 'package:taskflow/features/projects/domain/repositories/project_repository.dart';
 
 class RemoveMemberUseCase {
   final ProjectRepository repository;
@@ -13,10 +13,10 @@ class RemoveMemberUseCase {
     required String currentUserId,
   }) async {
     if (ownerId != currentUserId) {
-      throw const PermissionDeniedException('Only the project owner can remove members.');
+      throw const PermissionDeniedException('Seul le propriétaire du projet peut retirer des membres.');
     }
     if (memberId == ownerId) {
-      throw const ValidationException('The project owner cannot be removed from the project.');
+      throw const ValidationException('Le propriétaire du projet ne peut pas être retiré du projet.');
     }
 
     await repository.removeMember(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:task_flow/core/constants/app_colors.dart';
+import 'package:taskflow/core/constants/app_colors.dart';
 
 enum ProjectMenuAction {
   edit,
@@ -61,7 +61,9 @@ class ProjectMenu extends StatelessWidget {
                 children: [
                   Icon(Icons.edit_outlined, size: 20, color: AppColors.textPrimary),
                   SizedBox(width: 12),
-                  Text('Edit Project', style: TextStyle(fontSize: 14)),
+                  Expanded(
+                    child: Text('Modifier le projet', style: TextStyle(fontSize: 14)),
+                  ),
                 ],
               ),
             ),
@@ -71,7 +73,9 @@ class ProjectMenu extends StatelessWidget {
                 children: [
                   Icon(Icons.group_outlined, size: 20, color: AppColors.textPrimary),
                   SizedBox(width: 12),
-                  Text('Manage Members', style: TextStyle(fontSize: 14)),
+                  Expanded(
+                    child: Text('Gérer les membres', style: TextStyle(fontSize: 14)),
+                  ),
                 ],
               ),
             ),
@@ -81,7 +85,9 @@ class ProjectMenu extends StatelessWidget {
                 children: [
                   Icon(Icons.file_download_outlined, size: 20, color: AppColors.textPrimary),
                   SizedBox(width: 12),
-                  Text('Export Tasks as JSON', style: TextStyle(fontSize: 14)),
+                  Expanded(
+                    child: Text('Exporter les tâches en JSON', style: TextStyle(fontSize: 14)),
+                  ),
                 ],
               ),
             ),
@@ -92,8 +98,10 @@ class ProjectMenu extends StatelessWidget {
                 children: [
                   Icon(Icons.delete_outline_rounded, size: 20, color: AppColors.error),
                   SizedBox(width: 12),
-                  Text('Delete Project',
-                      style: TextStyle(fontSize: 14, color: AppColors.error)),
+                  Expanded(
+                    child: Text('Supprimer le projet',
+                        style: TextStyle(fontSize: 14, color: AppColors.error)),
+                  ),
                 ],
               ),
             ),
@@ -106,7 +114,9 @@ class ProjectMenu extends StatelessWidget {
                 children: [
                   Icon(Icons.file_download_outlined, size: 20, color: AppColors.textPrimary),
                   SizedBox(width: 12),
-                  Text('Export Tasks as JSON', style: TextStyle(fontSize: 14)),
+                  Expanded(
+                    child: Text('Exporter les tâches en JSON', style: TextStyle(fontSize: 14)),
+                  ),
                 ],
               ),
             ),
@@ -117,8 +127,10 @@ class ProjectMenu extends StatelessWidget {
                 children: [
                   Icon(Icons.logout_rounded, size: 20, color: AppColors.error),
                   SizedBox(width: 12),
-                  Text('Leave Project',
-                      style: TextStyle(fontSize: 14, color: AppColors.error)),
+                  Expanded(
+                    child: Text('Quitter le projet',
+                        style: TextStyle(fontSize: 14, color: AppColors.error)),
+                  ),
                 ],
               ),
             ),

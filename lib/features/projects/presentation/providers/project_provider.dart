@@ -1,22 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:task_flow/core/services/share_service.dart';
-import 'package:task_flow/features/projects/data/datasources/project_remote_datasource.dart';
-import 'package:task_flow/features/projects/data/repositories/project_repository_impl.dart';
-import 'package:task_flow/features/projects/domain/entities/project.dart';
-import 'package:task_flow/features/projects/domain/entities/project_member.dart';
-import 'package:task_flow/features/projects/domain/repositories/project_repository.dart';
-import 'package:task_flow/features/projects/domain/usecases/create_project.dart';
-import 'package:task_flow/features/projects/domain/usecases/delete_project.dart';
-import 'package:task_flow/features/projects/domain/usecases/export_project_json.dart';
-import 'package:task_flow/features/projects/domain/usecases/get_project.dart';
-import 'package:task_flow/features/projects/domain/usecases/get_project_members.dart';
-import 'package:task_flow/features/projects/domain/usecases/get_projects.dart';
-import 'package:task_flow/features/projects/domain/usecases/leave_project.dart';
-import 'package:task_flow/features/projects/domain/usecases/regenerate_invitation_code.dart';
-import 'package:task_flow/features/projects/domain/usecases/remove_member.dart';
-import 'package:task_flow/features/projects/domain/usecases/update_project.dart';
+import 'package:taskflow/core/services/share_service.dart';
+import 'package:taskflow/features/projects/data/datasources/project_remote_datasource.dart';
+import 'package:taskflow/features/projects/data/repositories/project_repository_impl.dart';
+import 'package:taskflow/features/projects/domain/entities/project.dart';
+import 'package:taskflow/features/projects/domain/entities/project_member.dart';
+import 'package:taskflow/features/projects/domain/repositories/project_repository.dart';
+import 'package:taskflow/features/projects/domain/usecases/create_project.dart';
+import 'package:taskflow/features/projects/domain/usecases/delete_project.dart';
+import 'package:taskflow/features/projects/domain/usecases/export_project_json.dart';
+import 'package:taskflow/features/projects/domain/usecases/get_project.dart';
+import 'package:taskflow/features/projects/domain/usecases/get_project_members.dart';
+import 'package:taskflow/features/projects/domain/usecases/get_projects.dart';
+import 'package:taskflow/features/projects/domain/usecases/leave_project.dart';
+import 'package:taskflow/features/projects/domain/usecases/regenerate_invitation_code.dart';
+import 'package:taskflow/features/projects/domain/usecases/remove_member.dart';
+import 'package:taskflow/features/projects/domain/usecases/update_project.dart';
 
 // ==========================================
 // INFRASTRUCTURE & SERVICE PROVIDERS
@@ -129,7 +129,7 @@ final projectMembersStreamProvider = StreamProvider.family<List<ProjectMember>, 
 });
 
 // ==========================================
-// ACTION CONTROLLER (Riverpod 3 compatible)
+// ACTION CONTROLLER (StateNotifier)
 // ==========================================
 
 class ProjectActionState {
@@ -156,9 +156,10 @@ class ProjectActionState {
   }
 }
 
-class ProjectActionController extends Notifier<ProjectActionState> {
-  @override
-  ProjectActionState build() => const ProjectActionState();
+class ProjectActionController extends StateNotifier<ProjectActionState> {
+  final Ref ref;
+
+  ProjectActionController(this.ref) : super(const ProjectActionState());
 
   Future<Project?> createProject({
     required String name,
@@ -168,17 +169,14 @@ class ProjectActionController extends Notifier<ProjectActionState> {
     try {
       final currentUserId = ref.read(currentUserIdProvider);
       final project = await ref.read(createProjectUseCaseProvider).call(
-        name: name,
-        description: description,
-        currentUserId: currentUserId,
-      );
-      state = state.copyWith(isLoading: false, successMessage: 'Project created successfully!');
+            name: name,
+            description: description,
+            currentUserId: currentUserId,
+          );
+      state = state.copyWith(isLoading: false, successMessage: 'Projet créé avec succès !');
       return project;
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: e.toString().replaceFirst('AppException: ', '').replaceFirst('Exception: ', ''),
-      );
+      state = state.copyWith(isLoading: false, errorMessage: e.toString().replaceFirst('AppException: ', '').replaceFirst('Exception: ', ''));
       return null;
     }
   }
@@ -190,16 +188,13 @@ class ProjectActionController extends Notifier<ProjectActionState> {
     try {
       final currentUserId = ref.read(currentUserIdProvider);
       await ref.read(updateProjectUseCaseProvider).call(
-        project: project,
-        currentUserId: currentUserId,
-      );
-      state = state.copyWith(isLoading: false, successMessage: 'Project updated successfully!');
+            project: project,
+            currentUserId: currentUserId,
+          );
+      state = state.copyWith(isLoading: false, successMessage: 'Projet mis à jour avec succès !');
       return true;
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: e.toString().replaceFirst('AppException: ', '').replaceFirst('Exception: ', ''),
-      );
+      state = state.copyWith(isLoading: false, errorMessage: e.toString().replaceFirst('AppException: ', '').replaceFirst('Exception: ', ''));
       return false;
     }
   }
@@ -212,17 +207,14 @@ class ProjectActionController extends Notifier<ProjectActionState> {
     try {
       final currentUserId = ref.read(currentUserIdProvider);
       await ref.read(deleteProjectUseCaseProvider).call(
-        projectId: projectId,
-        ownerId: ownerId,
-        currentUserId: currentUserId,
-      );
-      state = state.copyWith(isLoading: false, successMessage: 'Project deleted successfully.');
+            projectId: projectId,
+            ownerId: ownerId,
+            currentUserId: currentUserId,
+          );
+      state = state.copyWith(isLoading: false, successMessage: 'Projet supprimé avec succès.');
       return true;
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: e.toString().replaceFirst('AppException: ', '').replaceFirst('Exception: ', ''),
-      );
+      state = state.copyWith(isLoading: false, errorMessage: e.toString().replaceFirst('AppException: ', '').replaceFirst('Exception: ', ''));
       return false;
     }
   }
@@ -236,18 +228,15 @@ class ProjectActionController extends Notifier<ProjectActionState> {
     try {
       final currentUserId = ref.read(currentUserIdProvider);
       await ref.read(removeMemberUseCaseProvider).call(
-        projectId: projectId,
-        memberId: memberId,
-        ownerId: ownerId,
-        currentUserId: currentUserId,
-      );
-      state = state.copyWith(isLoading: false, successMessage: 'Member removed successfully.');
+            projectId: projectId,
+            memberId: memberId,
+            ownerId: ownerId,
+            currentUserId: currentUserId,
+          );
+      state = state.copyWith(isLoading: false, successMessage: 'Membre retiré avec succès.');
       return true;
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: e.toString().replaceFirst('AppException: ', '').replaceFirst('Exception: ', ''),
-      );
+      state = state.copyWith(isLoading: false, errorMessage: e.toString().replaceFirst('AppException: ', '').replaceFirst('Exception: ', ''));
       return false;
     }
   }
@@ -260,17 +249,14 @@ class ProjectActionController extends Notifier<ProjectActionState> {
     try {
       final currentUserId = ref.read(currentUserIdProvider);
       await ref.read(leaveProjectUseCaseProvider).call(
-        projectId: projectId,
-        ownerId: ownerId,
-        currentUserId: currentUserId,
-      );
-      state = state.copyWith(isLoading: false, successMessage: 'You have left the project.');
+            projectId: projectId,
+            ownerId: ownerId,
+            currentUserId: currentUserId,
+          );
+      state = state.copyWith(isLoading: false, successMessage: 'Vous avez quitté le projet.');
       return true;
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: e.toString().replaceFirst('AppException: ', '').replaceFirst('Exception: ', ''),
-      );
+      state = state.copyWith(isLoading: false, errorMessage: e.toString().replaceFirst('AppException: ', '').replaceFirst('Exception: ', ''));
       return false;
     }
   }
@@ -283,17 +269,14 @@ class ProjectActionController extends Notifier<ProjectActionState> {
     try {
       final currentUserId = ref.read(currentUserIdProvider);
       final newCode = await ref.read(regenerateInvitationCodeUseCaseProvider).call(
-        projectId: projectId,
-        ownerId: ownerId,
-        currentUserId: currentUserId,
-      );
-      state = state.copyWith(isLoading: false, successMessage: 'Invitation code regenerated successfully!');
+            projectId: projectId,
+            ownerId: ownerId,
+            currentUserId: currentUserId,
+          );
+      state = state.copyWith(isLoading: false, successMessage: 'Code d’invitation régénéré avec succès !');
       return newCode;
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: e.toString().replaceFirst('AppException: ', '').replaceFirst('Exception: ', ''),
-      );
+      state = state.copyWith(isLoading: false, errorMessage: e.toString().replaceFirst('AppException: ', '').replaceFirst('Exception: ', ''));
       return null;
     }
   }
@@ -304,19 +287,16 @@ class ProjectActionController extends Notifier<ProjectActionState> {
     state = state.copyWith(isLoading: true, errorMessage: null, successMessage: null);
     try {
       await ref.read(exportProjectJsonUseCaseProvider).call(projectId: projectId);
-      state = state.copyWith(isLoading: false, successMessage: 'Tasks exported successfully.');
+      state = state.copyWith(isLoading: false, successMessage: 'Tâches exportées avec succès.');
       return true;
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: e.toString().replaceFirst('AppException: ', '').replaceFirst('Exception: ', ''),
-      );
+      state = state.copyWith(isLoading: false, errorMessage: e.toString().replaceFirst('AppException: ', '').replaceFirst('Exception: ', ''));
       return false;
     }
   }
 }
 
 final projectActionControllerProvider =
-    NotifierProvider<ProjectActionController, ProjectActionState>(() {
-  return ProjectActionController();
+    StateNotifierProvider<ProjectActionController, ProjectActionState>((ref) {
+  return ProjectActionController(ref);
 });

@@ -1,5 +1,5 @@
-import 'package:task_flow/features/projects/domain/entities/project.dart';
-import 'package:task_flow/features/projects/domain/entities/project_member.dart';
+import 'package:taskflow/features/projects/domain/entities/project.dart';
+import 'package:taskflow/features/projects/domain/entities/project_member.dart';
 
 abstract class ProjectRepository {
   /// Streams all projects where the user is a member or owner.

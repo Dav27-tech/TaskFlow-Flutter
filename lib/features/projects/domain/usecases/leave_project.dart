@@ -1,5 +1,5 @@
-import 'package:task_flow/core/errors/exceptions.dart';
-import 'package:task_flow/features/projects/domain/repositories/project_repository.dart';
+import 'package:taskflow/core/errors/exceptions.dart';
+import 'package:taskflow/features/projects/domain/repositories/project_repository.dart';
 
 class LeaveProjectUseCase {
   final ProjectRepository repository;
@@ -12,7 +12,7 @@ class LeaveProjectUseCase {
     required String currentUserId,
   }) async {
     if (ownerId == currentUserId) {
-      throw const ValidationException('The project owner cannot leave the project. Please transfer ownership or delete the project instead.');
+      throw const ValidationException('Le propriétaire du projet ne peut pas le quitter. Transférez la propriété ou supprimez le projet.');
     }
 
     await repository.leaveProject(

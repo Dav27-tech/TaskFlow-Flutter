@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:task_flow/core/constants/app_colors.dart';
-import 'package:task_flow/core/widgets/error_view.dart';
-import 'package:task_flow/core/widgets/loading_indicator.dart';
-import 'package:task_flow/features/projects/presentation/providers/project_provider.dart';
-import 'package:task_flow/features/projects/presentation/widgets/project_card.dart';
+import 'package:taskflow/core/constants/app_colors.dart';
+import 'package:taskflow/core/widgets/error_view.dart';
+import 'package:taskflow/core/widgets/loading_indicator.dart';
+import 'package:taskflow/features/projects/presentation/providers/project_provider.dart';
+import 'package:taskflow/features/projects/presentation/widgets/project_card.dart';
 
 class ProjectsPage extends ConsumerWidget {
   const ProjectsPage({super.key});
@@ -18,11 +18,11 @@ class ProjectsPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
-        title: const Text('Projects'),
+        title: const Text('Projets'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add_circle_outline_rounded, size: 26),
-            tooltip: 'Create Project',
+            tooltip: 'Créer un projet',
             onPressed: () => context.push('/projects/create'),
           ),
         ],
@@ -54,7 +54,7 @@ class ProjectsPage extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const LoadingIndicator(message: 'Loading your projects...'),
+        loading: () => const LoadingIndicator(message: 'Chargement de vos projets...'),
         error: (error, stack) => ErrorView(
           message: error.toString().replaceFirst('AppException: ', ''),
           onRetry: () => ref.invalidate(projectsStreamProvider),
@@ -63,7 +63,7 @@ class ProjectsPage extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/projects/create'),
         icon: const Icon(Icons.add_rounded),
-        label: const Text('New Project', style: TextStyle(fontWeight: FontWeight.bold)),
+        label: const Text('Nouveau projet', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
     );
   }
@@ -78,7 +78,7 @@ class ProjectsPage extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.08),
+                color: AppColors.primary.withOpacity(0.08),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -89,7 +89,7 @@ class ProjectsPage extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
             const Text(
-              'No projects yet',
+              'Aucun projet pour le moment',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -98,7 +98,7 @@ class ProjectsPage extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Create your first project to start organizing tasks and collaborating with your team.',
+              'Créez votre premier projet pour organiser vos tâches et collaborer avec votre équipe.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
@@ -110,7 +110,7 @@ class ProjectsPage extends ConsumerWidget {
             ElevatedButton.icon(
               onPressed: () => context.push('/projects/create'),
               icon: const Icon(Icons.add_rounded),
-              label: const Text('Create Project'),
+              label: const Text('Créer un projet'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
