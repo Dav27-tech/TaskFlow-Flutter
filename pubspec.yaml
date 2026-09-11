@@ -2,7 +2,7 @@ name: task_flow
 description: "TaskFlow — Application collaborative de gestion des tâches avec Flutter, Firebase Authentication, Cloud Firestore et Clean Architecture, avec synchronisation en temps réel et export JSON."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -36,6 +36,13 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  firebase_core: ^4.14.0
+  flutter_riverpod: ^3.0.0
+  firebase_auth: ^6.6.1
+  cloud_firestore: ^6.9.0
+  go_router: ^17.2.3
+  flutter_svg: ^2.2.0
+  share_plus: ^11.0.0
 
 dev_dependencies:
   flutter_test:
@@ -53,11 +60,14 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  assets:
+    - assets/logo/taskflow-illustration.svg
+    - assets/logo/taskflow-logo.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

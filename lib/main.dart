@@ -1,26 +1,20 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'providers/task_provider.dart';
-import 'screens/tasks_list_screen.dart';
-import 'theme/app_theme.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-void main() {
-  runApp(const TaskManagementApp());
-}
+import 'app/app.dart';
+import 'firebase_options.dart';
 
-class TaskManagementApp extends StatelessWidget {
-  const TaskManagementApp({super.key});
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => TaskProvider(),
-      child: MaterialApp(
-        title: 'TaskFlow',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light,
-        home: const TasksListScreen(),
-      ),
-    );
-  }
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  runApp(
+    const ProviderScope(
+      child: TaskFlowApp(),
+    ),
+  );
 }
