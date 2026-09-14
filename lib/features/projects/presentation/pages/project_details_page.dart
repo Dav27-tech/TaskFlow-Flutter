@@ -77,7 +77,7 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
               body: LoadingIndicator(message: 'Loading project details...'),
             ),
       error: (error, stack) => Scaffold(
-        appBar: AppBar(title: const Text('Project Details')),
+        appBar: AppBar(title: const Text('Détails du projet', style: TextStyle(fontWeight: FontWeight.bold))),
         body: ErrorView(
           message: error.toString().replaceFirst('AppException: ', ''),
           onRetry: () => ref.invalidate(projectDetailsProvider(widget.projectId)),
@@ -133,11 +133,11 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
                   tabs: const [
                     Tab(
                       icon: Icon(Icons.check_box_outlined, size: 20),
-                      text: 'Tasks',
+                      text: 'Tâches',
                     ),
                     Tab(
                       icon: Icon(Icons.people_alt_outlined, size: 20),
-                      text: 'Members',
+                      text: 'Membres',
                     ),
                   ],
                 ),
@@ -165,7 +165,7 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Tasks (${project.tasksCount})',
+                'Tâches (${project.tasksCount})',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -175,7 +175,7 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
               TextButton.icon(
                 onPressed: () => _handleExportJson(project.id),
                 icon: const Icon(Icons.file_download_outlined, size: 18),
-                label: const Text('Export JSON'),
+                label: const Text('Exporter JSON'),
               ),
             ],
           ),
@@ -206,7 +206,7 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      '${project.completedTasksCount} of ${project.tasksCount} tasks completed',
+                      '${project.completedTasksCount} sur ${project.tasksCount} tâches terminées',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -215,7 +215,7 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
                     ),
                     const SizedBox(height: 6),
                     const Text(
-                      'Tasks are managed collaboratively by project members.',
+                      'Les tâches sont gérées en collaboration par les membres du projet.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 13,
@@ -246,7 +246,7 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Project Members',
+                'Membres du projet',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -259,7 +259,7 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
                     context.push('/projects/${project.id}/members', extra: project);
                   },
                   icon: const Icon(Icons.settings_outlined, size: 18),
-                  label: const Text('Manage'),
+                  label: const Text('Gérer'),
                 ),
             ],
           ),
@@ -268,7 +268,7 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
             child: membersAsync.when(
               data: (members) {
                 if (members.isEmpty) {
-                  return const Center(child: Text('No members found.'));
+                  return const Center(child: Text('Aucun membre trouvé.'));
                 }
                 return ListView.builder(
                   itemCount: members.length,
@@ -303,9 +303,9 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
   void _handleDeleteProject(Project project) async {
     final confirmed = await ConfirmDialog.show(
       context,
-      title: 'Delete Project',
-      content: 'Are you sure you want to delete "${project.name}"? This action cannot be undone and all tasks will be permanently removed.',
-      confirmText: 'Delete',
+      title: 'Supprimer le projet',
+      content: 'Êtes-vous sûr de vouloir supprimer "${project.name}" ? Cette action est irréversible et toutes les tâches seront définitivement supprimées.',
+      confirmText: 'Supprimer',
       isDestructive: true,
     );
 
@@ -323,9 +323,9 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
   void _handleLeaveProject(Project project) async {
     final confirmed = await ConfirmDialog.show(
       context,
-      title: 'Leave Project',
-      content: 'Are you sure you want to leave "${project.name}"? You will lose access to this project and its tasks.',
-      confirmText: 'Leave',
+      title: 'Quitter le projet',
+      content: 'Êtes-vous sûr de vouloir quitter "${project.name}" ? Vous perdrez l\'accès à ce projet et à ses tâches.',
+      confirmText: 'Quitter',
       isDestructive: true,
     );
 
@@ -343,10 +343,10 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
   void _handleRemoveMember(Project project, String memberId) async {
     final confirmed = await ConfirmDialog.show(
       context,
-      title: 'Remove Member',
-      content: 'Are you sure you want to remove this member from this project?',
-      confirmText: 'Remove Member',
-      cancelText: 'Cancel',
+      title: 'Retirer le membre',
+      content: 'Êtes-vous sûr de vouloir retirer ce membre de ce projet ?',
+      confirmText: 'Retirer',
+      cancelText: 'Annuler',
       isDestructive: true,
     );
 

@@ -72,7 +72,7 @@ class MemberTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
-              member.role.toUpperCase(),
+              member.isOwner ? 'PROPRIÉTAIRE' : 'MEMBRE',
               style: TextStyle(
                 color: member.isOwner
                     ? AppColors.ownerBadgeText
@@ -101,7 +101,7 @@ class MemberTile extends StatelessWidget {
                     children: [
                       Icon(Icons.person_remove_outlined, size: 18, color: AppColors.error),
                       SizedBox(width: 8),
-                      Text('Remove from project',
+                      Text('Retirer du projet',
                           style: TextStyle(fontSize: 13, color: AppColors.error)),
                     ],
                   ),

@@ -23,6 +23,12 @@ J'ai terminé la mise à jour de l'application. La section **Projets** est déso
     - Amélioration visuelle des cartes de métriques dans le résumé du projet.
 
 ### ⚙️ Logique & Fonctionnalités
+- **Fix Accès Détails Projet** :
+    - Le routeur (`app_router.dart`) passe maintenant l'objet `Project` directement à la page de détails. Cela permet un affichage immédiat et évite les blocages dus aux chargements initiaux.
+    - Ajout de logs de diagnostic dans `ProjectRemoteDataSource.getProject` pour isoler les erreurs de permissions sur les sous-collections (Tâches/Membres) sans bloquer l'affichage du projet lui-même.
+- **Fix PERMISSION_DENIED** :
+    - `currentUserIdProvider` est désormais réactif et écoute les changements d'état d'authentification.
+    - Ajout d'une sécurité dans `ProjectRemoteDataSource` pour garantir que l'UID de l'utilisateur connecté est toujours utilisé lors de la création d'un projet.
 - **Recherche Locale** : Vous pouvez désormais filtrer vos projets par nom ou description directement depuis la liste.
 - **Validation** : Amélioration des messages de validation dans le formulaire de création/édition.
 

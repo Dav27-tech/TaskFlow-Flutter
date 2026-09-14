@@ -18,155 +18,172 @@ class ProjectCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isOwner = project.isOwner(currentUserId);
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 14),
-      elevation: 0,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.border, width: 1),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.7), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header: Role Badge + Status Chip
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Project Icon Container
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    width: 52,
+                    height: 52,
                     decoration: BoxDecoration(
-                      color: isOwner
-                          ? AppColors.ownerBadgeBackground
-                          : AppColors.memberBadgeBackground,
-                      borderRadius: BorderRadius.circular(8),
+                      color: _getProjectIconColor(project.name).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                    child: Icon(
+                      _getProjectIcon(project.name),
+                      color: _getProjectIconColor(project.name),
+                      size: 26,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  // Project Info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
-                          isOwner ? Icons.stars_rounded : Icons.person_outline_rounded,
-                          size: 14,
-                          color: isOwner
-                              ? AppColors.ownerBadgeText
-                              : AppColors.memberBadgeText,
-                        ),
-                        const SizedBox(width: 4),
                         Text(
-                          isOwner ? 'OWNER' : 'MEMBER',
-                          style: TextStyle(
-                            color: isOwner
-                                ? AppColors.ownerBadgeText
-                                : AppColors.memberBadgeText,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
+                          project.name,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                            letterSpacing: -0.2,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
+                        if (project.description.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            project.description,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.textSecondary,
+                              height: 1.3,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ],
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(project.status).withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(6),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted, size: 24),
+                ],
+              ),
+              const SizedBox(height: 16),
+              
+              // Progress Row
+              Row(
+                children: [
+                  Text(
+                    '${project.progressPercentage}%',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: project.progressRatio == 1.0 ? AppColors.success : AppColors.primary,
                     ),
-                    child: Text(
-                      project.status.toUpperCase(),
-                      style: TextStyle(
-                        color: _getStatusColor(project.status),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: project.progressRatio,
+                        minHeight: 6,
+                        backgroundColor: AppColors.divider.withValues(alpha: 0.5),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          project.progressRatio == 1.0 ? AppColors.success : AppColors.primary,
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
 
-              // Project Name
-              Text(
-                project.name,
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              if (project.description.isNotEmpty) ...[
-                const SizedBox(height: 6),
-                Text(
-                  project.description,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                    height: 1.3,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-              const SizedBox(height: 14),
-
-              // Progress Bar
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: project.progressRatio,
-                  minHeight: 6,
-                  backgroundColor: AppColors.divider,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    project.progressRatio == 1.0 ? AppColors.success : AppColors.primary,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // Footer Metrics
+              // Footer: Task & Member counts + Role
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.check_circle_outline_rounded,
-                          size: 16, color: AppColors.textSecondary),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${project.completedTasksCount}/${project.tasksCount} tasks',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textSecondary,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.backgroundLight,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.check_box_outlined, size: 14, color: AppColors.textSecondary),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${project.tasksCount} tâches',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 14),
-                      const Icon(Icons.people_outline_rounded,
-                          size: 16, color: AppColors.textSecondary),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${project.membersCount > 0 ? project.membersCount : (project.memberIds.isNotEmpty ? project.memberIds.length : 1)} members',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.backgroundLight,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.people_outline_rounded, size: 14, color: AppColors.textSecondary),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${project.membersCount > 0 ? project.membersCount : (project.memberIds.isNotEmpty ? project.memberIds.length : 1)} membres',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Spacer(),
+                  // Badge Role
                   Text(
-                    '${project.progressPercentage}%',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+                    isOwner ? 'PROPRIÉTAIRE' : 'MEMBRE',
+                    style: TextStyle(
+                      color: isOwner ? AppColors.ownerBadgeText : AppColors.memberBadgeText,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.4,
                     ),
                   ),
                 ],
@@ -178,18 +195,24 @@ class ProjectCard extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'completed':
-      case 'done':
-        return AppColors.success;
-      case 'in_progress':
-        return AppColors.warning;
-      case 'archived':
-        return AppColors.textMuted;
-      case 'active':
-      default:
-        return AppColors.primary;
-    }
+  IconData _getProjectIcon(String name) {
+    final lowerName = name.toLowerCase();
+    if (lowerName.contains('mobile') || lowerName.contains('app')) return Icons.rocket_launch_rounded;
+    if (lowerName.contains('web') || lowerName.contains('site')) return Icons.bar_chart_rounded;
+    if (lowerName.contains('design') || lowerName.contains('ui')) return Icons.palette_rounded;
+    if (lowerName.contains('marketing')) return Icons.campaign_rounded;
+    if (lowerName.contains('internal')) return Icons.description_rounded;
+    return Icons.folder_rounded;
   }
+
+  Color _getProjectIconColor(String name) {
+    final lowerName = name.toLowerCase();
+    if (lowerName.contains('mobile') || lowerName.contains('app')) return const Color(0xFF6C5CE7);
+    if (lowerName.contains('web') || lowerName.contains('site')) return const Color(0xFF16A34A);
+    if (lowerName.contains('design') || lowerName.contains('ui')) return const Color(0xFFF59E0B);
+    if (lowerName.contains('marketing')) return const Color(0xFFE91E63);
+    if (lowerName.contains('internal')) return const Color(0xFF2878E8);
+    return AppColors.primary;
+  }
+
 }

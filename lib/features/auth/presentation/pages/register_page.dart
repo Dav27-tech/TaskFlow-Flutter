@@ -346,7 +346,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                           onPressed: isLoading
                               ? null
                               : () => context.go('/login'),
-                          child: const Text('Se connecter', style: TextStyle(color: Color(0xFF608EF3)),),
+                          child: const Text(
+                            'Se connecter',
+                            style: TextStyle(color: Color(0xFF608EF3)),
+                          ),
                         ),
                       ],
                     ),

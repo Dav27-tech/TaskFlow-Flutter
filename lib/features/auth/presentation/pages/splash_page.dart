@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -11,16 +13,15 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
+  Timer? _redirectTimer;
+
   @override
   void initState() {
     super.initState();
-    _checkAuthentication();
+    _redirectTimer = Timer(const Duration(seconds: 2), _checkAuthentication);
   }
 
-  Future<void> _checkAuthentication() async {
-    // Laisse le temps au Splash de s'afficher.
-    await Future.delayed(const Duration(seconds: 2));
-
+  void _checkAuthentication() {
     if (!mounted) {
       return;
     }
@@ -28,8 +29,16 @@ class _SplashPageState extends State<SplashPage> {
     final user = FirebaseAuth.instance.currentUser;
 
     if (user != null) {
+      context.go('/dashboard');
+    } else {
       context.go('/login');
     }
+  }
+
+  @override
+  void dispose() {
+    _redirectTimer?.cancel();
+    super.dispose();
   }
 
   @override
