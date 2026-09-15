@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:task_flow/core/constants/app_colors.dart';
 
 import '../providers/profile_provider.dart';
 
@@ -14,34 +15,43 @@ class ProfilePage extends ConsumerWidget {
     final profileAsync = ref.watch(profileProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Row(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        toolbarHeight: 0, // Masquer l'appbar pour le style Large Title
+      ),
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Profil',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF172033),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(24, 22, 24, 18),
+              child: Text(
+                'Profil',
+                style: TextStyle(
+                  color: Color(0xFF172033),
+                  fontSize: 40,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            Expanded(
+              child: profileAsync.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (error, stackTrace) => _ProfileError(
+                  onRetry: () {
+                    ref.invalidate(profileProvider);
+                  },
+                ),
+                data: (profile) {
+                  return _ProfileContent(profile: profile);
+                },
               ),
             ),
           ],
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-      ),
-      body: profileAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => _ProfileError(
-          onRetry: () {
-            ref.invalidate(profileProvider);
-          },
-        ),
-        data: (profile) {
-          return _ProfileContent(profile: profile);
-        },
       ),
     );
   }
@@ -61,7 +71,7 @@ class _ProfileContent extends ConsumerWidget {
     final initials = _getInitials(displayName);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
       child: Column(
         children: [
           _ProfileHeader(
@@ -364,27 +374,16 @@ class _ProfileHeader extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEAF8F0),
+                  color: AppColors.success.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.verified_rounded,
-                      size: 16,
-                      color: Color(0xFF16A34A),
-                    ),
-                    SizedBox(width: 6),
-                    Text(
-                      'Compte actif',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF16A34A),
-                      ),
-                    ),
-                  ],
+                child: const Text(
+                  'Compte actif',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.success,
+                  ),
                 ),
               ),
             ],

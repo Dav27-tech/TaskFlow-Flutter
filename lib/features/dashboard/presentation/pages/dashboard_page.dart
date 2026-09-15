@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/constants/app_colors.dart';
 import '../../../projects/presentation/providers/project_provider.dart';
 
 class DashboardPage extends ConsumerWidget {
@@ -12,7 +13,17 @@ class DashboardPage extends ConsumerWidget {
     final projectsAsync = ref.watch(projectsStreamProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Tableau de bord')),
+      appBar: AppBar(
+        title: const Text('Tableau de bord'),
+        actions: [
+          IconButton(
+            onPressed: () => context.push('/notifications'),
+            icon: const Icon(Icons.notifications_none_rounded),
+            tooltip: 'Notifications',
+            color: AppColors.textPrimary,
+          ),
+        ],
+      ),
       body: projectsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(child: Text('Impossible de charger vos projets.\n$error')),

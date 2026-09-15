@@ -6,16 +6,16 @@ import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/splash_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
+import '../../features/tasks/domain/entities/task.dart';
+import '../../features/tasks/presentation/pages/task_details_page.dart';
+import '../../features/tasks/presentation/pages/task_form_page.dart';
 import '../../features/tasks/presentation/pages/tasks_page.dart';
-// import '../../features/tasks/presentation/pages/kanban_page.dart';
-// import '../../features/tasks/presentation/pages/task_details_page.dart';
-// import '../../features/tasks/presentation/pages/create_task_page.dart';
 import '../../features/projects/presentation/pages/projects_page.dart';
 import '../../features/projects/presentation/pages/project_form_page.dart';
 import '../../features/projects/presentation/pages/project_details_page.dart';
 import '../../features/projects/presentation/pages/manage_members_page.dart';
 import '../../features/projects/domain/entities/project.dart';
-// import '../../features/notifications/presentation/pages/notifications_page.dart';
+import '../../features/notifications/presentation/pages/notifications_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -25,16 +25,9 @@ final GoRouter appRouter = GoRouter(
     // ============================================================
     // AUTHENTIFICATION
     // ============================================================
+    GoRoute(path: '/splash', builder: (context, state) => const SplashPage()),
 
-    GoRoute(
-      path: '/splash',
-      builder: (context, state) => const SplashPage(),
-    ),
-
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginPage(),
-    ),
+    GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
 
     GoRoute(
       path: '/register',
@@ -47,10 +40,24 @@ final GoRouter appRouter = GoRouter(
     ),
 
     GoRoute(
-      path: '/projects/:id/edit',
-      builder: (context, state) => ProjectFormPage(
-        initialProject: state.extra as Project?,
+      path: '/tasks/create',
+      builder: (context, state) => TaskFormPage(
+        initialProjectId: state.uri.queryParameters['projectId'],
       ),
+    ),
+
+    GoRoute(
+      path: '/tasks/:projectId/:taskId/edit',
+      builder: (context, state) => TaskFormPage(
+        initialProjectId: state.pathParameters['projectId'],
+        initialTask: state.extra as Task?,
+      ),
+    ),
+
+    GoRoute(
+      path: '/projects/:id/edit',
+      builder: (context, state) =>
+          ProjectFormPage(initialProject: state.extra as Project?),
     ),
 
     GoRoute(
@@ -74,23 +81,23 @@ final GoRouter appRouter = GoRouter(
       },
     ),
 
+    GoRoute(
+      path: '/notifications',
+      builder: (context, state) => const NotificationsPage(),
+    ),
 
     // ============================================================
     // APPLICATION PRINCIPALE
     // ============================================================
-
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
-        return AppShell(
-          navigationShell: navigationShell,
-        );
+        return AppShell(navigationShell: navigationShell);
       },
 
       branches: [
         // ========================================================
         // ACCUEIL / DASHBOARD
         // ========================================================
-
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -103,12 +110,21 @@ final GoRouter appRouter = GoRouter(
         // ========================================================
         // TÂCHES
         // ========================================================
-
         StatefulShellBranch(
           routes: [
             GoRoute(
               path: '/tasks',
               builder: (context, state) => const TasksPage(),
+              routes: [
+                GoRoute(
+                  path: ':projectId/:taskId',
+                  builder: (context, state) => TaskDetailsPage(
+                    projectId: state.pathParameters['projectId']!,
+                    taskId: state.pathParameters['taskId']!,
+                    initialTask: state.extra as Task?,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -116,7 +132,6 @@ final GoRouter appRouter = GoRouter(
         // ========================================================
         // PROJETS
         // ========================================================
-
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -129,7 +144,6 @@ final GoRouter appRouter = GoRouter(
         // ========================================================
         // PROFIL
         // ========================================================
-
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -146,10 +160,7 @@ final GoRouter appRouter = GoRouter(
 class AppShell extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
 
-  const AppShell({
-    super.key,
-    required this.navigationShell,
-  });
+  const AppShell({super.key, required this.navigationShell});
 
   void _onDestinationSelected(int index) {
     navigationShell.goBranch(

@@ -14,11 +14,12 @@ final taskRepositoryProvider = Provider<TaskRepository>((ref) {
   return TaskRepositoryImpl(ref.watch(taskRemoteDataSourceProvider));
 });
 
-final tasksStreamProvider = StreamProvider.family<List<Task>, String>(
-  (ref, projectId) {
-    return ref.watch(taskRepositoryProvider).watchTasks(projectId);
-  },
-);
+final tasksStreamProvider = StreamProvider.family<List<Task>, String>((
+  ref,
+  projectId,
+) {
+  return ref.watch(taskRepositoryProvider).watchTasks(projectId);
+});
 
 class TaskActionController extends Notifier<AsyncValue<void>> {
   @override
@@ -28,13 +29,51 @@ class TaskActionController extends Notifier<AsyncValue<void>> {
     required String projectId,
     required String title,
     required String description,
+    required String assignedMemberId,
+    required String priority,
+    required String status,
+    required DateTime deadline,
   }) async {
-    return _run(() => ref.read(taskRepositoryProvider).createTask(
-          projectId: projectId,
-          title: title,
-          description: description,
-          userId: ref.read(currentUserIdProvider),
-        ));
+    return _run(
+      () => ref
+          .read(taskRepositoryProvider)
+          .createTask(
+            projectId: projectId,
+            title: title,
+            description: description,
+            assignedMemberId: assignedMemberId,
+            priority: priority,
+            status: status,
+            deadline: deadline,
+            userId: ref.read(currentUserIdProvider),
+          ),
+    );
+  }
+
+  Future<bool> updateTask({
+    required String projectId,
+    required String taskId,
+    required String title,
+    required String description,
+    required String assignedMemberId,
+    required String priority,
+    required String status,
+    required DateTime deadline,
+  }) async {
+    return _run(
+      () => ref
+          .read(taskRepositoryProvider)
+          .updateTask(
+            projectId: projectId,
+            taskId: taskId,
+            title: title,
+            description: description,
+            assignedMemberId: assignedMemberId,
+            priority: priority,
+            status: status,
+            deadline: deadline,
+          ),
+    );
   }
 
   Future<bool> updateStatus({
@@ -42,21 +81,22 @@ class TaskActionController extends Notifier<AsyncValue<void>> {
     required String taskId,
     required String status,
   }) async {
-    return _run(() => ref.read(taskRepositoryProvider).updateStatus(
-          projectId: projectId,
-          taskId: taskId,
-          status: status,
-        ));
+    return _run(
+      () => ref
+          .read(taskRepositoryProvider)
+          .updateStatus(projectId: projectId, taskId: taskId, status: status),
+    );
   }
 
   Future<bool> deleteTask({
     required String projectId,
     required String taskId,
   }) async {
-    return _run(() => ref.read(taskRepositoryProvider).deleteTask(
-          projectId: projectId,
-          taskId: taskId,
-        ));
+    return _run(
+      () => ref
+          .read(taskRepositoryProvider)
+          .deleteTask(projectId: projectId, taskId: taskId),
+    );
   }
 
   Future<bool> _run(Future<void> Function() action) async {
@@ -74,5 +114,5 @@ class TaskActionController extends Notifier<AsyncValue<void>> {
 
 final taskActionControllerProvider =
     NotifierProvider<TaskActionController, AsyncValue<void>>(
-  TaskActionController.new,
-);
+      TaskActionController.new,
+    );

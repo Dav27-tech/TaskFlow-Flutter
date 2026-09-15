@@ -16,88 +16,114 @@ class ProjectsPage extends ConsumerWidget {
     final projectsAsync = ref.watch(filteredProjectsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
-      appBar: AppBar(
-        title: const Text('Projets', style: TextStyle(fontWeight: FontWeight.bold),),
-        actions: [
-          Container(
-            margin: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: IconButton(
-              color: Colors.white,
-              icon: const Icon(Icons.add_rounded, size: 25),
-              tooltip: 'Créer un projet',
-              onPressed: () => context.push('/projects/create'),
-            ),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Search Bar
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: TextField(
-              onChanged: (value) =>
-                  ref.read(projectSearchQueryProvider.notifier).setQuery(value),
-              decoration: InputDecoration(
-                hintText: 'Rechercher un projet...',
-                prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.border),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.border),
-                ),
-              ),
-            ),
-          ),
-          
-          Expanded(
-            child: projectsAsync.when(
-              data: (projects) {
-                if (projects.isEmpty) {
-                  final query = ref.watch(projectSearchQueryProvider);
-                  return _buildEmptyState(context, query.isNotEmpty);
-                }
-
-                return RefreshIndicator(
-                  color: AppColors.primary,
-                  onRefresh: () async {
-                    ref.invalidate(projectsStreamProvider);
-                  },
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: projects.length,
-                    itemBuilder: (context, index) {
-                      final project = projects[index];
-                      return ProjectCard(
-                        project: project,
-                        currentUserId: currentUserId,
-                        onTap: () {
-                          context.push('/projects/${project.id}', extra: project);
-                        },
-                      );
-                    },
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Harmonized Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 22, 24, 0),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Projets',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 40,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
                   ),
-                );
-              },
-              loading: () => const LoadingIndicator(message: 'Chargement des projets...'),
-              error: (error, stack) => ErrorView(
-                message: error.toString().replaceFirst('AppException: ', ''),
-                onRetry: () => ref.invalidate(projectsStreamProvider),
+                  SizedBox.square(
+                    dimension: 52,
+                    child: FilledButton(
+                      onPressed: () => context.push('/projects/create'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Icon(Icons.add_rounded, size: 30),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
+
+            // Search Bar
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+              child: TextField(
+                onChanged: (value) =>
+                    ref.read(projectSearchQueryProvider.notifier).setQuery(value),
+                decoration: InputDecoration(
+                  hintText: 'Rechercher un projet...',
+                  prefixIcon: const Icon(
+                    Icons.search_rounded,
+                    color: AppColors.textSecondary,
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                ),
+              ),
+            ),
+
+            Expanded(
+              child: projectsAsync.when(
+                data: (projects) {
+                  if (projects.isEmpty) {
+                    final query = ref.watch(projectSearchQueryProvider);
+                    return _buildEmptyState(context, query.isNotEmpty);
+                  }
+
+                  return RefreshIndicator(
+                    color: AppColors.primary,
+                    onRefresh: () async {
+                      ref.invalidate(projectsStreamProvider);
+                    },
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: projects.length,
+                      itemBuilder: (context, index) {
+                        final project = projects[index];
+                        return ProjectCard(
+                          project: project,
+                          currentUserId: currentUserId,
+                          onTap: () {
+                            context.push(
+                              '/projects/${project.id}',
+                              extra: project,
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  );
+                },
+                loading: () =>
+                    const LoadingIndicator(message: 'Chargement des projets...'),
+                error: (error, stack) => ErrorView(
+                  message: error.toString().replaceFirst('AppException: ', ''),
+                  onRetry: () => ref.invalidate(projectsStreamProvider),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -132,9 +158,9 @@ class ProjectsPage extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              isSearch 
-                ? 'Nous n\'avons trouvé aucun projet correspondant à votre recherche.'
-                : 'Commencez par créer votre premier projet pour organiser vos tâches et collaborer.',
+              isSearch
+                  ? 'Nous n\'avons trouvé aucun projet correspondant à votre recherche.'
+                  : 'Commencez par créer votre premier projet pour organiser vos tâches et collaborer.',
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 14,
@@ -151,7 +177,10 @@ class ProjectsPage extends ConsumerWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 14,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
