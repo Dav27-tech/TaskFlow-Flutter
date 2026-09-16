@@ -15,7 +15,8 @@ class DashboardPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final projectsAsync = ref.watch(projectsStreamProvider);
-    final userName = FirebaseAuth.instance.currentUser?.displayName ?? 'Utilisateur';
+    final userName =
+        FirebaseAuth.instance.currentUser?.displayName ?? 'Utilisateur';
     final greetingName = userName.trim().split(RegExp(r'\s+')).first;
 
     return Scaffold(
@@ -45,30 +46,40 @@ class DashboardPage extends ConsumerWidget {
               tasksByProject[project.id] = tasks;
             }
 
-            final allTasks = tasksByProject.values.expand((tasks) => tasks).toList();
-            final todoCount = allTasks.where((task) => task.status == 'todo').length;
-            final inProgressCount = allTasks.where((task) => task.status == 'in_progress').length;
-            final completedCount = allTasks.where((task) => task.status == 'completed').length;
+            final allTasks = tasksByProject.values
+                .expand((tasks) => tasks)
+                .toList();
+            final todoCount = allTasks
+                .where((task) => task.status == 'todo')
+                .length;
+            final inProgressCount = allTasks
+                .where((task) => task.status == 'in_progress')
+                .length;
+            final completedCount = allTasks
+                .where((task) => task.status == 'completed')
+                .length;
 
-            final focusTasks = [...allTasks.where((task) => task.status != 'completed')]
-              ..sort((a, b) {
-                final aPriority = _priorityWeight(a.priority);
-                final bPriority = _priorityWeight(b.priority);
-                if (aPriority != bPriority) {
-                  return bPriority.compareTo(aPriority);
-                }
-                final aDate = a.deadline ?? a.createdAt;
-                final bDate = b.deadline ?? b.createdAt;
-                return aDate.compareTo(bDate);
-              });
+            final focusTasks =
+                [...allTasks.where((task) => task.status != 'completed')]
+                  ..sort((a, b) {
+                    final aPriority = _priorityWeight(a.priority);
+                    final bPriority = _priorityWeight(b.priority);
+                    if (aPriority != bPriority) {
+                      return bPriority.compareTo(aPriority);
+                    }
+                    final aDate = a.deadline ?? a.createdAt;
+                    final bDate = b.deadline ?? b.createdAt;
+                    return aDate.compareTo(bDate);
+                  });
 
             final recentProjects = projects.take(3).toList();
-            final importantTasks = [...allTasks.where((task) => task.priority == 'high')]
-              ..sort((a, b) {
-                final aDate = a.deadline ?? a.createdAt;
-                final bDate = b.deadline ?? b.createdAt;
-                return aDate.compareTo(bDate);
-              });
+            final importantTasks =
+                [...allTasks.where((task) => task.priority == 'high')]
+                  ..sort((a, b) {
+                    final aDate = a.deadline ?? a.createdAt;
+                    final bDate = b.deadline ?? b.createdAt;
+                    return aDate.compareTo(bDate);
+                  });
 
             return RefreshIndicator(
               color: AppColors.primary,
@@ -205,7 +216,8 @@ class DashboardPage extends ConsumerWidget {
                   else
                     Column(
                       children: recentProjects.map((project) {
-                        final projectTasks = tasksByProject[project.id] ?? const <Task>[];
+                        final projectTasks =
+                            tasksByProject[project.id] ?? const <Task>[];
                         final progress = project.progressPercentage;
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 12),
@@ -259,13 +271,20 @@ class DashboardPage extends ConsumerWidget {
                       child: Column(
                         children: importantTasks.take(3).map((task) {
                           final taskColor = _priorityColor(task.priority);
-                          final projectName = projects
-                              .where((project) => project.id == task.projectId)
-                              .firstOrNull
-                              ?.name ?? 'Projet';
+                          final projectName =
+                              projects
+                                  .where(
+                                    (project) => project.id == task.projectId,
+                                  )
+                                  .firstOrNull
+                                  ?.name ??
+                              'Projet';
 
                           return Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
                             decoration: const BoxDecoration(
                               border: Border(
                                 bottom: BorderSide(color: AppColors.divider),
@@ -279,13 +298,17 @@ class DashboardPage extends ConsumerWidget {
                                   margin: const EdgeInsets.only(right: 12),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    border: Border.all(color: taskColor, width: 2),
+                                    border: Border.all(
+                                      color: taskColor,
+                                      width: 2,
+                                    ),
                                     color: taskColor.withValues(alpha: 0.12),
                                   ),
                                 ),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         task.title,
@@ -309,7 +332,10 @@ class DashboardPage extends ConsumerWidget {
                                 Padding(
                                   padding: const EdgeInsets.only(left: 12),
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: taskColor.withValues(alpha: 0.12),
                                       borderRadius: BorderRadius.circular(999),
@@ -447,7 +473,10 @@ class _FocusPanel extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
                           color: color.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(999),
@@ -506,10 +535,7 @@ class _ProjectTile extends StatelessWidget {
                   color: accent.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  Icons.folder_outlined,
-                  color: accent,
-                ),
+                child: Icon(Icons.folder_outlined, color: accent),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -541,10 +567,7 @@ class _ProjectTile extends StatelessWidget {
             children: [
               Text(
                 '$progress%',
-                style: TextStyle(
-                  color: accent,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TextStyle(color: accent, fontWeight: FontWeight.w700),
               ),
               const Spacer(),
               Text(
@@ -559,7 +582,11 @@ class _ProjectTile extends StatelessWidget {
           const SizedBox(height: 10),
           Row(
             children: [
-              const Icon(Icons.task_alt_rounded, size: 14, color: AppColors.textSecondary),
+              const Icon(
+                Icons.task_alt_rounded,
+                size: 14,
+                color: AppColors.textSecondary,
+              ),
               const SizedBox(width: 6),
               Text(
                 '$completedCount terminées',
@@ -591,7 +618,11 @@ class _EmptyDashboard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Icon(Icons.folder_open_rounded, size: 42, color: AppColors.primary),
+          const Icon(
+            Icons.folder_open_rounded,
+            size: 42,
+            color: AppColors.primary,
+          ),
           const SizedBox(height: 12),
           const Text(
             'Aucun projet pour le moment',
@@ -605,10 +636,7 @@ class _EmptyDashboard extends StatelessWidget {
           const Text(
             'Créez votre premier projet pour commencer à organiser votre travail.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 13,
-            ),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
           ),
         ],
       ),
@@ -682,7 +710,12 @@ Color _priorityColor(String priority) {
 Color _projectAccentColor(String projectName) {
   final value = projectName.trim().isEmpty ? 'default' : projectName;
   final hash = value.codeUnits.fold<int>(0, (sum, code) => sum + code);
-  final palette = [AppColors.primary, AppColors.secondary, AppColors.info, AppColors.success];
+  final palette = [
+    AppColors.primary,
+    AppColors.secondary,
+    AppColors.info,
+    AppColors.success,
+  ];
   return palette[hash % palette.length];
 }
 

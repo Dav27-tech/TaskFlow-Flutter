@@ -19,6 +19,10 @@ abstract class ProjectRemoteDataSource {
   Future<void> updateProject(ProjectModel project);
   Future<void> deleteProject(String projectId);
   Stream<List<ProjectMemberModel>> getProjectMembersStream(String projectId);
+  Stream<List<ProjectMemberModel>> getActiveUsersNotInProject({
+    required String projectId,
+  });
+  Future<void> addMember({required String projectId, required String memberId});
   Future<void> removeMember({
     required String projectId,
     required String memberId,
@@ -41,8 +45,8 @@ class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
   ProjectRemoteDataSourceImpl({
     FirebaseFirestore? firestore,
     FirebaseAuth? auth,
-  })  : firestore = firestore ?? FirebaseFirestore.instance,
-        auth = auth ?? FirebaseAuth.instance;
+  }) : firestore = firestore ?? FirebaseFirestore.instance,
+       auth = auth ?? FirebaseAuth.instance;
 
   CollectionReference<Map<String, dynamic>> get _projectsCollection =>
       firestore.collection(AppConstants.projectsCollection);
@@ -53,9 +57,38 @@ class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
       return _projectsCollection
           .where('memberIds', arrayContains: userId)
           .snapshots()
-          .map((snapshot) {
-        return snapshot.docs.map((doc) => ProjectModel.fromFirestore(doc)).toList();
-      });
+          .asyncMap((snapshot) async {
+            final projects = <ProjectModel>[];
+
+            for (final doc in snapshot.docs) {
+              final project = ProjectModel.fromFirestore(doc);
+              final tasksSnapshot = await _projectsCollection
+                  .doc(doc.id)
+                  .collection(AppConstants.tasksSubcollection)
+                  .get();
+
+              final membersSnapshot = await _projectsCollection
+                  .doc(doc.id)
+                  .collection(AppConstants.membersSubcollection)
+                  .get();
+
+              final totalTasks = tasksSnapshot.docs.length;
+              final completedTasks = tasksSnapshot.docs.where((taskDoc) {
+                final status = taskDoc.data()['status'] as String? ?? '';
+                return status == 'completed' || status == 'done';
+              }).length;
+
+              projects.add(
+                project.copyWith(
+                  tasksCount: totalTasks,
+                  completedTasksCount: completedTasks,
+                  membersCount: membersSnapshot.docs.length,
+                ),
+              );
+            }
+
+            return projects;
+          });
     } catch (e) {
       throw ServerException('Failed to stream projects: $e');
     }
@@ -84,7 +117,9 @@ class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
           return status == 'completed' || status == 'done';
         }).length;
       } catch (e) {
-        debugPrint('Warning: Failed to fetch tasks stats for project $projectId: $e');
+        debugPrint(
+          'Warning: Failed to fetch tasks stats for project $projectId: $e',
+        );
       }
 
       // Fetch members count
@@ -96,7 +131,9 @@ class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
             .get();
         membersCount = membersSnapshot.docs.length;
       } catch (e) {
-        debugPrint('Warning: Failed to fetch members count for project $projectId: $e');
+        debugPrint(
+          'Warning: Failed to fetch members count for project $projectId: $e',
+        );
       }
 
       final project = ProjectModel.fromFirestore(doc);
@@ -124,10 +161,10 @@ class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
       if (currentUser == null) {
         throw const AuthException('No authenticated user found.');
       }
-      
+
       // Safety check: ensure the provided ID matches the logged in user
       final authenticatedUserId = currentUser.uid;
-      
+
       final now = DateTime.now();
       final projectDocRef = _projectsCollection.doc();
       final memberDocRef = projectDocRef
@@ -190,8 +227,12 @@ class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
       final projectRef = _projectsCollection.doc(projectId);
 
       // Clean up subcollections in a batch
-      final membersSnap = await projectRef.collection(AppConstants.membersSubcollection).get();
-      final tasksSnap = await projectRef.collection(AppConstants.tasksSubcollection).get();
+      final membersSnap = await projectRef
+          .collection(AppConstants.membersSubcollection)
+          .get();
+      final tasksSnap = await projectRef
+          .collection(AppConstants.tasksSubcollection)
+          .get();
 
       final batch = firestore.batch();
       for (final doc in membersSnap.docs) {
@@ -216,10 +257,96 @@ class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
           .collection(AppConstants.membersSubcollection)
           .snapshots()
           .map((snapshot) {
-        return snapshot.docs.map((doc) => ProjectMemberModel.fromFirestore(doc)).toList();
-      });
+            return snapshot.docs
+                .map((doc) => ProjectMemberModel.fromFirestore(doc))
+                .toList();
+          });
     } catch (e) {
       throw ServerException('Failed to stream project members: $e');
+    }
+  }
+
+  @override
+  Stream<List<ProjectMemberModel>> getActiveUsersNotInProject({
+    required String projectId,
+  }) {
+    return firestore.collection('users').snapshots().asyncMap((
+      usersSnapshot,
+    ) async {
+      final membersSnapshot = await _projectsCollection
+          .doc(projectId)
+          .collection(AppConstants.membersSubcollection)
+          .get();
+      final memberIds = membersSnapshot.docs.map((doc) => doc.id).toSet();
+
+      return usersSnapshot.docs
+          .where((doc) => doc.data()['isActive'] != false)
+          .where((doc) => !memberIds.contains(doc.id))
+          .map(
+            (doc) =>
+                ProjectMemberModel.fromFirestore(doc, userProfile: doc.data()),
+          )
+          .toList();
+    });
+  }
+
+  @override
+  Future<void> addMember({
+    required String projectId,
+    required String memberId,
+  }) async {
+    try {
+      final projectRef = _projectsCollection.doc(projectId);
+      final userSnapshot = await firestore
+          .collection('users')
+          .doc(memberId)
+          .get();
+      if (!userSnapshot.exists || userSnapshot.data()?['isActive'] == false) {
+        throw const ValidationException('Cet utilisateur n’est pas actif.');
+      }
+
+      final memberRef = projectRef
+          .collection(AppConstants.membersSubcollection)
+          .doc(memberId);
+      final existingMember = await memberRef.get();
+      if (existingMember.exists) {
+        throw const ValidationException(
+          'Cet utilisateur appartient déjà au projet.',
+        );
+      }
+
+      final data = userSnapshot.data() ?? <String, dynamic>{};
+      final now = Timestamp.now();
+      final batch = firestore.batch();
+      batch.set(memberRef, {
+        'userId': memberId,
+        'role': AppConstants.roleMember,
+        'joinedAt': now,
+        'displayName': data['displayName'],
+        'email': data['email'],
+        'photoUrl': data['photoUrl'],
+      });
+      batch.update(projectRef, {
+        'memberIds': FieldValue.arrayUnion([memberId]),
+        'updatedAt': now,
+      });
+      await batch.commit();
+
+      final notificationRef = firestore.collection('notifications').doc();
+      await notificationRef.set({
+        'userId': memberId,
+        'title': 'Ajouté à un projet',
+        'message': 'Vous avez été ajouté à un projet.',
+        'type': 'project_member_added',
+        'projectId': projectId,
+        'isRead': false,
+        'createdAt': now,
+        'readAt': null,
+      });
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw ServerException('Failed to add member: $e');
     }
   }
 
@@ -230,7 +357,9 @@ class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
   }) async {
     try {
       final projectRef = _projectsCollection.doc(projectId);
-      final memberRef = projectRef.collection(AppConstants.membersSubcollection).doc(memberId);
+      final memberRef = projectRef
+          .collection(AppConstants.membersSubcollection)
+          .doc(memberId);
 
       final batch = firestore.batch();
       batch.delete(memberRef);
@@ -252,7 +381,9 @@ class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
   }) async {
     try {
       final projectRef = _projectsCollection.doc(projectId);
-      final memberRef = projectRef.collection(AppConstants.membersSubcollection).doc(currentUserId);
+      final memberRef = projectRef
+          .collection(AppConstants.membersSubcollection)
+          .doc(currentUserId);
 
       final batch = firestore.batch();
       batch.delete(memberRef);

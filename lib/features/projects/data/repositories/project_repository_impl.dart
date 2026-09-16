@@ -34,7 +34,9 @@ class ProjectRepositoryImpl implements ProjectRepository {
     required String currentUserId,
     String? initialInvitationCode,
   }) async {
-    final code = initialInvitationCode ?? InvitationCodeGenerator.generateInvitationCode();
+    final code =
+        initialInvitationCode ??
+        InvitationCodeGenerator.generateInvitationCode();
     return await remoteDataSource.createProject(
       name: name,
       description: description,
@@ -57,6 +59,22 @@ class ProjectRepositoryImpl implements ProjectRepository {
   @override
   Stream<List<ProjectMember>> getProjectMembers(String projectId) {
     return remoteDataSource.getProjectMembersStream(projectId);
+  }
+
+  @override
+  Stream<List<ProjectMember>> getActiveUsersNotInProject({
+    required String projectId,
+  }) {
+    return remoteDataSource.getActiveUsersNotInProject(projectId: projectId);
+  }
+
+  @override
+  Future<void> addMember({
+    required String projectId,
+    required String memberId,
+    required String currentUserId,
+  }) async {
+    await remoteDataSource.addMember(projectId: projectId, memberId: memberId);
   }
 
   @override

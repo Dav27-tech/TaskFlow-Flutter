@@ -151,66 +151,39 @@ class _ProfileContent extends ConsumerWidget {
     WidgetRef ref,
     String currentName,
   ) async {
-    final controller = TextEditingController(text: currentName);
-    final formKey = GlobalKey<FormState>();
-    final shouldSave = await showDialog<bool>(
+    final updatedName = await showDialog<String>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Modifier le profil'),
-        content: Form(
-          key: formKey,
-          child: TextFormField(
-            controller: controller,
-            autofocus: true,
-            decoration: const InputDecoration(labelText: 'Nom complet'),
-            validator: (value) => value == null || value.trim().length < 2
-                ? 'Saisissez au moins 2 caractères.'
-                : null,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Annuler'),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (formKey.currentState!.validate()) {
-                Navigator.pop(dialogContext, true);
-              }
-            },
-            child: const Text('Enregistrer'),
-          ),
-        ],
-      ),
+      builder: (_) => _EditProfileDialog(currentName: currentName),
     );
 
-    if (shouldSave != true || !context.mounted) {
-      controller.dispose();
+    if (updatedName == null || !context.mounted) {
       return;
     }
 
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      return;
+    }
     try {
-      await user.updateDisplayName(controller.text.trim());
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).set(
-        {'displayName': controller.text.trim(), 'updatedAt': FieldValue.serverTimestamp()},
-        SetOptions(merge: true),
-      );
+      await user.updateDisplayName(updatedName);
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'displayName': updatedName,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
       if (!context.mounted) {
-        controller.dispose();
         return;
       }
       ref.invalidate(profileProvider);
     } on FirebaseAuthException catch (error) {
       if (!context.mounted) {
-        controller.dispose();
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message ?? 'Impossible de modifier le profil.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error.message ?? 'Impossible de modifier le profil.'),
+        ),
+      );
     }
-    controller.dispose();
   }
 
   Future<void> _showChangePasswordDialog(BuildContext context) async {
@@ -229,7 +202,9 @@ class _ProfileContent extends ConsumerWidget {
               TextFormField(
                 controller: passwordController,
                 obscureText: true,
-                decoration: const InputDecoration(labelText: 'Nouveau mot de passe'),
+                decoration: const InputDecoration(
+                  labelText: 'Nouveau mot de passe',
+                ),
                 validator: (value) => value == null || value.length < 6
                     ? 'Utilisez au moins 6 caractères.'
                     : null,
@@ -238,7 +213,9 @@ class _ProfileContent extends ConsumerWidget {
               TextFormField(
                 controller: confirmController,
                 obscureText: true,
-                decoration: const InputDecoration(labelText: 'Confirmer le mot de passe'),
+                decoration: const InputDecoration(
+                  labelText: 'Confirmer le mot de passe',
+                ),
                 validator: (value) => value != passwordController.text
                     ? 'Les mots de passe ne correspondent pas.'
                     : null,
@@ -247,10 +224,14 @@ class _ProfileContent extends ConsumerWidget {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Annuler')),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Annuler'),
+          ),
           FilledButton(
             onPressed: () {
-              if (formKey.currentState!.validate()) Navigator.pop(dialogContext, true);
+              if (formKey.currentState!.validate())
+                Navigator.pop(dialogContext, true);
             },
             child: const Text('Mettre à jour'),
           ),
@@ -265,26 +246,29 @@ class _ProfileContent extends ConsumerWidget {
     }
 
     try {
-      await FirebaseAuth.instance.currentUser?.updatePassword(passwordController.text);
+      await FirebaseAuth.instance.currentUser?.updatePassword(
+        passwordController.text,
+      );
       if (!context.mounted) {
-        passwordController.dispose();
-        confirmController.dispose();
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mot de passe mis à jour.')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Mot de passe mis à jour.')));
     } on FirebaseAuthException catch (error) {
       if (!context.mounted) {
-        passwordController.dispose();
-        confirmController.dispose();
         return;
       }
       final message = error.code == 'requires-recent-login'
           ? 'Reconnectez-vous avant de modifier votre mot de passe.'
           : error.message ?? 'Impossible de modifier le mot de passe.';
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    } finally {
+      passwordController.dispose();
+      confirmController.dispose();
     }
-    passwordController.dispose();
-    confirmController.dispose();
   }
 
   String _getInitials(String name) {
@@ -323,6 +307,64 @@ class _ProfileContent extends ConsumerWidget {
     final year = date.year.toString();
 
     return '$day/$month/$year';
+  }
+}
+
+class _EditProfileDialog extends StatefulWidget {
+  const _EditProfileDialog({required this.currentName});
+
+  final String currentName;
+
+  @override
+  State<_EditProfileDialog> createState() => _EditProfileDialogState();
+}
+
+class _EditProfileDialogState extends State<_EditProfileDialog> {
+  late final TextEditingController _controller;
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.currentName);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Modifier le profil'),
+      content: Form(
+        key: _formKey,
+        child: TextFormField(
+          controller: _controller,
+          autofocus: true,
+          decoration: const InputDecoration(labelText: 'Nom complet'),
+          validator: (value) => value == null || value.trim().length < 2
+              ? 'Saisissez au moins 2 caractères.'
+              : null,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Annuler'),
+        ),
+        FilledButton(
+          onPressed: () {
+            if (_formKey.currentState!.validate()) {
+              Navigator.of(context).pop(_controller.text.trim());
+            }
+          },
+          child: const Text('Enregistrer'),
+        ),
+      ],
+    );
   }
 }
 

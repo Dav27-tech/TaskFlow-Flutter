@@ -32,6 +32,7 @@ class AuthRemoteDataSource {
       'displayName': displayName,
       'photoUrl': '',
       'phoneNumber': '',
+      'isActive': true,
       'createdAt': FieldValue.serverTimestamp(),
     });
   }

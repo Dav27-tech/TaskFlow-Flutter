@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:task_flow/core/constants/app_colors.dart';
 import 'package:task_flow/core/widgets/confirm_dialog.dart';
@@ -24,24 +23,51 @@ class ManageMembersPage extends ConsumerStatefulWidget {
 }
 
 class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
-  String? _localInvitationCode;
-
   @override
   Widget build(BuildContext context) {
-    final projectDetailsAsync = ref.watch(projectDetailsProvider(widget.projectId));
-    final membersAsync = ref.watch(projectMembersStreamProvider(widget.projectId));
+    final projectDetailsAsync = ref.watch(
+      projectDetailsProvider(widget.projectId),
+    );
+    final membersAsync = ref.watch(
+      projectMembersStreamProvider(widget.projectId),
+    );
+    final activeUsersAsync = ref.watch(
+      activeUsersNotInProjectProvider(widget.projectId),
+    );
     final currentUserId = ref.watch(currentUserIdProvider);
 
     return projectDetailsAsync.when(
-      data: (project) => _buildPage(context, project, currentUserId, membersAsync),
+      data: (project) => _buildPage(
+        context,
+        project,
+        currentUserId,
+        membersAsync,
+        activeUsersAsync,
+      ),
       loading: () => widget.initialProject != null
-          ? _buildPage(context, widget.initialProject!, currentUserId, membersAsync)
-          : const Scaffold(body: LoadingIndicator(message: 'Chargement de la gestion des membres...')),
+          ? _buildPage(
+              context,
+              widget.initialProject!,
+              currentUserId,
+              membersAsync,
+              activeUsersAsync,
+            )
+          : const Scaffold(
+              body: LoadingIndicator(
+                message: 'Chargement de la gestion des membres...',
+              ),
+            ),
       error: (error, stack) => Scaffold(
-        appBar: AppBar(title: const Text('Gérer les membres')),
+        appBar: AppBar(
+          title: const Text(
+            'Gérer les membres',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
         body: ErrorView(
           message: error.toString().replaceFirst('AppException: ', ''),
-          onRetry: () => ref.invalidate(projectDetailsProvider(widget.projectId)),
+          onRetry: () =>
+              ref.invalidate(projectDetailsProvider(widget.projectId)),
         ),
       ),
     );
@@ -52,15 +78,12 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
     Project project,
     String currentUserId,
     AsyncValue membersAsync,
+    AsyncValue activeUsersAsync,
   ) {
     final isOwner = project.isOwner(currentUserId);
-    final displayedCode = _localInvitationCode ?? project.invitationCode;
-
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
-      appBar: AppBar(
-        title: const Text('Gérer les membres'),
-      ),
+      appBar: AppBar(title: const Text('Gérer les membres')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -82,7 +105,11 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
                       color: AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.folder_outlined, color: AppColors.primary, size: 24),
+                    child: const Icon(
+                      Icons.folder_outlined,
+                      color: AppColors.primary,
+                      size: 24,
+                    ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -103,7 +130,10 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
                           const SizedBox(height: 2),
                           Text(
                             project.description,
-                            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -116,102 +146,6 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
             ),
             const SizedBox(height: 24),
 
-            // INVITATION CODE CARD
-            const Text(
-              'Code d\'invitation',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Partagez ce code avec les membres de votre équipe pour qu\'ils rejoignent ce projet.',
-              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF6C5CE7), Color(0xFF4834D4)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.vpn_key_rounded, color: Colors.white70, size: 20),
-                      const SizedBox(width: 8),
-                      SelectableText(
-                        displayedCode,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 2.0,
-                          color: Colors.white,
-                          fontFamily: 'monospace',
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => _copyCodeToClipboard(displayedCode),
-                          icon: const Icon(Icons.copy_rounded, size: 16),
-                          label: const Text('Copier le code'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: AppColors.primaryDark,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                        ),
-                      ),
-                      if (isOwner) ...[
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => _handleRegenerateCode(project),
-                            icon: const Icon(Icons.refresh_rounded, size: 16),
-                            label: const Text('Régénérer'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              side: const BorderSide(color: Colors.white60, width: 1.2),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 28),
-
-            // MEMBERS LIST SECTION
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -223,6 +157,22 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
                     color: AppColors.textPrimary,
                   ),
                 ),
+                if (isOwner)
+                  IconButton(
+                    onPressed: () =>
+                        _showAddMemberDialog(project, activeUsersAsync),
+                    icon: const Icon(Icons.person_add_alt_1_rounded),
+                    color: AppColors.primary,
+                    tooltip: 'Ajouter un membre actif',
+                  ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            const SizedBox(height: 12),
+            // MEMBERS LIST SECTION
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
                 membersAsync.maybeWhen(
                   data: (members) => Text(
                     '${members.length} membres',
@@ -237,11 +187,12 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
               ],
             ),
             const SizedBox(height: 12),
-
             membersAsync.when(
               data: (members) {
                 if (members.isEmpty) {
-                  return const Center(child: Text('Aucun membre dans ce projet.'));
+                  return const Center(
+                    child: Text('Aucun membre dans ce projet.'),
+                  );
                 }
 
                 return ListView.builder(
@@ -253,7 +204,8 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
                     return MemberTile(
                       member: member,
                       isCurrentUserManager: isOwner,
-                      onRemove: () => _handleRemoveMember(project, member.userId),
+                      onRemove: () =>
+                          _handleRemoveMember(project, member.userId),
                     );
                   },
                 );
@@ -264,7 +216,8 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
               ),
               error: (err, _) => ErrorView(
                 message: err.toString(),
-                onRetry: () => ref.invalidate(projectMembersStreamProvider(project.id)),
+                onRetry: () =>
+                    ref.invalidate(projectMembersStreamProvider(project.id)),
               ),
             ),
           ],
@@ -273,46 +226,95 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
     );
   }
 
-  void _copyCodeToClipboard(String code) {
-    Clipboard.setData(ClipboardData(text: code));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
-            SizedBox(width: 8),
-            Text('Code d\'invitation copié dans le presse-papier !'),
-          ],
+  Future<void> _showAddMemberDialog(
+    Project project,
+    AsyncValue activeUsersAsync,
+  ) async {
+    if (!mounted) return;
+
+    List<dynamic> users;
+    if (activeUsersAsync.isLoading) {
+      try {
+        users = await ref.read(
+          activeUsersNotInProjectProvider(project.id).future,
+        );
+      } catch (error) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Impossible de charger les utilisateurs actifs.\n$error',
+            ),
+          ),
+        );
+        return;
+      }
+    } else if (activeUsersAsync.hasError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Impossible de charger les utilisateurs actifs.\n${activeUsersAsync.error}',
+          ),
         ),
-        backgroundColor: AppColors.success,
-        behavior: SnackBarBehavior.floating,
-        duration: Duration(seconds: 2),
+      );
+      return;
+    } else {
+      users = activeUsersAsync.maybeWhen(
+        data: (value) => value,
+        orElse: () => const [],
+      );
+    }
+
+    if (!mounted) return;
+    if (users.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Aucun utilisateur actif disponible.')),
+      );
+      return;
+    }
+
+    final selectedId = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Ajouter un membre actif'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.separated(
+            shrinkWrap: true,
+            itemCount: users.length,
+            separatorBuilder: (_, __) => const Divider(height: 1),
+            itemBuilder: (_, index) {
+              final user = users[index];
+              return ListTile(
+                leading: CircleAvatar(child: Text(user.initials)),
+                title: Text(user.displayTitle),
+                subtitle: user.email == null ? null : Text(user.email!),
+                onTap: () => Navigator.of(dialogContext).pop(user.userId),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Annuler'),
+          ),
+        ],
       ),
     );
-  }
 
-  void _handleRegenerateCode(Project project) async {
-    final confirmed = await ConfirmDialog.show(
-      context,
-      title: 'Régénérer le code',
-      content:
-          'Êtes-vous sûr de vouloir régénérer le code d\'invitation ? L\'ancien code cessera immédiatement de fonctionner.',
-      confirmText: 'Régénérer',
-      cancelText: 'Annuler',
-      isDestructive: false,
-    );
-
-    if (confirmed == true && mounted) {
-      final newCode = await ref
-          .read(projectActionControllerProvider.notifier)
-          .regenerateInvitationCode(projectId: project.id, ownerId: project.ownerId);
-
-      if (newCode != null && mounted) {
-        setState(() {
-          _localInvitationCode = newCode;
-        });
-        ref.invalidate(projectDetailsProvider(project.id));
-      }
+    if (selectedId == null || !mounted) return;
+    final added = await ref
+        .read(projectActionControllerProvider.notifier)
+        .addMember(
+          projectId: project.id,
+          memberId: selectedId,
+          ownerId: project.ownerId,
+        );
+    if (added && mounted) {
+      ref.invalidate(projectMembersStreamProvider(project.id));
+      ref.invalidate(activeUsersNotInProjectProvider(project.id));
+      ref.invalidate(projectDetailsProvider(project.id));
     }
   }
 
@@ -327,7 +329,9 @@ class _ManageMembersPageState extends ConsumerState<ManageMembersPage> {
     );
 
     if (confirmed == true) {
-      await ref.read(projectActionControllerProvider.notifier).removeMember(
+      await ref
+          .read(projectActionControllerProvider.notifier)
+          .removeMember(
             projectId: project.id,
             memberId: memberId,
             ownerId: project.ownerId,
