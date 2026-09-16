@@ -65,14 +65,14 @@ TaskFlow permet aux utilisateurs de créer des projets, collaborer avec des memb
 
 # 🏗️ Architecture du projet
 
-TaskFlow suit une **Clean Architecture** afin de séparer l'interface utilisateur, la logique métier et l'accès aux données.
+TaskFlow suit une **Clean Architecture organisée par fonctionnalités**. Chaque feature regroupe son accès aux données, ses règles métier et sa présentation, tandis que `app/` et `core/` contiennent les éléments transverses.
 
 ## Principe général
 
 ```text
 ┌──────────────────────────────────────────────┐
 │                PRESENTATION                  │
-│ Pages • Widgets • Riverpod • Notifiers      │
+│ Pages • Widgets • Riverpod Providers        │
 └──────────────────────┬───────────────────────┘
                        │
                        ▼
@@ -90,27 +90,27 @@ TaskFlow suit une **Clean Architecture** afin de séparer l'interface utilisateu
                        ▼
 ┌──────────────────────────────────────────────┐
 │              SERVICES EXTERNES              │
-│ Firebase Auth • Firestore • Stockage local  │
+│ Firebase Auth • Cloud Firestore • Share     │
 └──────────────────────────────────────────────┘
 ```
 
 ## Flux des données
 
 ```text
-UI
+Page / Widget
  ↓
-Riverpod Provider / Notifier
+Riverpod Provider ou Notifier
  ↓
-Use Case
+Use Case (si nécessaire)
  ↓
 Repository
  ↓
 Data Source
  ↓
-Firebase / Local Storage
+Firebase Auth / Cloud Firestore / Service partagé
 ```
 
-La couche `domain` ne dépend pas de Flutter, Firebase ou Riverpod.
+Les features `dashboard` et `profile` utilisent principalement des providers pour leurs lectures. Les features `auth`, `projects`, `tasks` et `notifications` suivent le découpage data/domain/presentation. La couche `domain` ne dépend pas de Flutter, Firebase ou Riverpod.
 
 ---
 
@@ -123,9 +123,8 @@ lib/
 ├── app/
 │   ├── app.dart
 │   ├── router/
-│   │   └── app_router.dart
-│   └── theme/
-│       └── app_theme.dart
+│   │   ├── app_router.dart
+│   │   └── app_shell.dart
 │
 ├── core/
 │   ├── constants/
@@ -151,9 +150,7 @@ lib/
     │
     ├── dashboard/
     │   └── presentation/
-    │       ├── pages/
-    │       ├── providers/
-    │       └── widgets/
+      │       └── pages/
     │
     ├── tasks/
     │   ├── data/
@@ -189,24 +186,15 @@ lib/
     │   │   ├── models/
     │   │   └── repositories/
     │   ├── domain/
-    │   │   ├── entities/
-    │   │   ├── repositories/
-    │   │   └── usecases/
+      │   │   └── entities/
     │   └── presentation/
     │       ├── pages/
-    │       ├── providers/
-    │       └── widgets/
+      │       └── providers/
     │
     ├── profile/
     │   └── presentation/
     │       ├── pages/
-    │       ├── providers/
-    │       └── widgets/
-    │
-    └── export/
-        ├── data/
-        ├── domain/
-        └── presentation/
+      │       └── providers/
 ```
 
 ---
@@ -225,10 +213,6 @@ Configure `MaterialApp.router`, le thème, la localisation et le système de nav
 
 Contient la configuration de GoRouter, les routes publiques et les routes protégées.
 
-### `theme/`
-
-Contient le thème Material 3, les couleurs et les styles communs.
-
 ---
 
 ## `core/`
@@ -245,7 +229,7 @@ Exceptions, erreurs Firebase, erreurs réseau et erreurs de validation.
 
 ### `services/`
 
-Services techniques partagés comme Firebase ou le stockage local.
+Services techniques partagés comme le partage de fichiers et l'export JSON.
 
 ### `utils/`
 
@@ -291,6 +275,10 @@ Contient :
 - Widgets
 - Providers
 - Notifiers
+
+### Dépendances entre features
+
+Les providers peuvent composer plusieurs features lorsque le dashboard ou les formulaires ont besoin de données croisées. Par exemple, le dashboard combine les projets et les tâches, et le formulaire de tâche lit les membres du projet avant d'autoriser une attribution. Les accès Firebase restent encapsulés dans les data sources.
 
 ---
 
