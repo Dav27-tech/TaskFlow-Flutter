@@ -36,7 +36,10 @@ class NotificationRepositoryImpl implements NotificationRepository {
     required String userId,
     required String notificationId,
   }) {
-    return dataSource.markAsRead(userId: userId, notificationId: notificationId);
+    return dataSource.markAsRead(
+      userId: userId,
+      notificationId: notificationId,
+    );
   }
 
   @override

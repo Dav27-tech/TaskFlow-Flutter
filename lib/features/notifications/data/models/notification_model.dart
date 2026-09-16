@@ -16,7 +16,9 @@ class NotificationModel extends AppNotification {
     super.readAt,
   });
 
-  factory NotificationModel.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+  factory NotificationModel.fromFirestore(
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
     final data = doc.data() ?? <String, dynamic>{};
     return NotificationModel(
       id: doc.id,

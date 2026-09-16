@@ -10,6 +10,8 @@ import 'package:task_flow/features/projects/presentation/providers/project_provi
 import 'package:task_flow/features/projects/presentation/widgets/member_tile.dart';
 import 'package:task_flow/features/projects/presentation/widgets/project_menu.dart';
 import 'package:task_flow/features/projects/presentation/widgets/project_summary.dart';
+import 'package:task_flow/features/tasks/domain/entities/task.dart';
+import 'package:task_flow/features/tasks/presentation/providers/task_provider.dart';
 
 class ProjectDetailsPage extends ConsumerStatefulWidget {
   final String projectId;
@@ -196,6 +198,8 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
   }
 
   Widget _buildTasksTab(Project project) {
+    final tasksAsync = ref.watch(tasksStreamProvider(project.id));
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -204,66 +208,60 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Tâches (${project.tasksCount})',
+                tasksAsync.maybeWhen(
+                  data: (tasks) => 'Tâches (${tasks.length})',
+                  orElse: () => 'Tâches (${project.tasksCount})',
+                ),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
                 ),
               ),
-              TextButton.icon(
-                onPressed: () => _handleExportJson(project.id),
-                icon: const Icon(Icons.file_download_outlined, size: 18),
-                label: const Text('Exporter JSON'),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: () =>
+                        context.push('/tasks/create?projectId=${project.id}'),
+                    icon: const Icon(Icons.add_task_rounded),
+                    color: AppColors.primary,
+                    tooltip: 'Ajouter une tâche',
+                  ),
+                  IconButton(
+                    onPressed: () => _handleExportJson(project.id),
+                    icon: const Icon(Icons.file_download_outlined),
+                    color: AppColors.primary,
+                    tooltip: 'Exporter les tâches',
+                  ),
+                ],
               ),
             ],
           ),
           const SizedBox(height: 16),
           Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.border),
+            child: tasksAsync.when(
+              loading: () => const LoadingIndicator(size: 28),
+              error: (error, stackTrace) => ErrorView(
+                message: error.toString(),
+                onRetry: () => ref.invalidate(tasksStreamProvider(project.id)),
               ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.08),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.task_alt_rounded,
-                        size: 40,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      '${project.completedTasksCount} sur ${project.tasksCount} tâches terminées',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    const Text(
-                      'Les tâches sont gérées en collaboration par les membres du projet.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              data: (tasks) {
+                if (tasks.isEmpty) {
+                  return _EmptyProjectTasks(
+                    onCreateTask: () =>
+                        context.push('/tasks/create?projectId=${project.id}'),
+                  );
+                }
+
+                return ListView.separated(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  itemCount: tasks.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) =>
+                      _ProjectTaskCard(task: tasks[index]),
+                );
+              },
             ),
           ),
         ],
@@ -405,6 +403,209 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
             ownerId: project.ownerId,
           );
     }
+  }
+}
+
+class _EmptyProjectTasks extends StatelessWidget {
+  const _EmptyProjectTasks({required this.onCreateTask});
+
+  final VoidCallback onCreateTask;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.primaryContainer,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.task_alt_rounded,
+              size: 40,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Aucune tâche pour ce projet',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Commencez par créer une tâche.',
+            style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            onPressed: onCreateTask,
+            icon: const Icon(Icons.add_task_rounded, size: 18),
+            label: const Text('Créer une tâche'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProjectTaskCard extends StatelessWidget {
+  const _ProjectTaskCard({required this.task});
+
+  final Task task;
+
+  @override
+  Widget build(BuildContext context) {
+    final isCompleted = task.status == 'completed';
+    final statusColor = _statusColor(task.status);
+    final priorityColor = _priorityColor(task.priority);
+
+    return InkWell(
+      onTap: () =>
+          context.push('/tasks/${task.projectId}/${task.id}', extra: task),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              isCompleted
+                  ? Icons.check_circle_rounded
+                  : Icons.radio_button_unchecked_rounded,
+              color: isCompleted ? AppColors.success : AppColors.textMuted,
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    task.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      decoration: isCompleted
+                          ? TextDecoration.lineThrough
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 6,
+                    children: [
+                      _TaskLabel(
+                        text: _statusLabel(task.status),
+                        color: statusColor,
+                      ),
+                      _TaskLabel(
+                        text: _priorityLabel(task.priority),
+                        color: priorityColor,
+                      ),
+                      if (task.deadline != null)
+                        _TaskLabel(
+                          text: _formatDate(task.deadline!),
+                          color: AppColors.textSecondary,
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _statusColor(String status) {
+    switch (status) {
+      case 'completed':
+        return AppColors.success;
+      case 'in_progress':
+        return AppColors.warning;
+      default:
+        return AppColors.textSecondary;
+    }
+  }
+
+  Color _priorityColor(String priority) {
+    switch (priority) {
+      case 'high':
+        return AppColors.error;
+      case 'low':
+        return AppColors.success;
+      default:
+        return AppColors.warning;
+    }
+  }
+
+  String _statusLabel(String status) {
+    switch (status) {
+      case 'completed':
+        return 'Terminée';
+      case 'in_progress':
+        return 'En cours';
+      default:
+        return 'À faire';
+    }
+  }
+
+  String _priorityLabel(String priority) {
+    switch (priority) {
+      case 'high':
+        return 'Haute';
+      case 'low':
+        return 'Basse';
+      default:
+        return 'Moyenne';
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}';
+  }
+}
+
+class _TaskLabel extends StatelessWidget {
+  const _TaskLabel({required this.text, required this.color});
+
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
   }
 }
 

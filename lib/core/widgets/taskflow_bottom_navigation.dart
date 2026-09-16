@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../constants/app_colors.dart';
+
 class TaskFlowBottomNavigation extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onDestinationSelected;
@@ -12,37 +14,70 @@ class TaskFlowBottomNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NavigationBar(
-      selectedIndex: currentIndex,
-      onDestinationSelected: onDestinationSelected,
-      height: 74,
-      backgroundColor: Colors.white,
-      surfaceTintColor: Colors.transparent,
-      elevation: 0,
-      indicatorColor: const Color(0xFFE0E7FF),
-      labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-      destinations: const [
-        NavigationDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home_rounded),
-          label: 'Accueil',
+    return SafeArea(
+      top: false,
+      child: Container(
+        decoration: const BoxDecoration(
+          color: AppColors.backgroundSurface,
+          border: Border(top: BorderSide(color: AppColors.border)),
         ),
-        NavigationDestination(
-          icon: Icon(Icons.checklist_outlined),
-          selectedIcon: Icon(Icons.checklist_rounded),
-          label: 'Tâches',
+        child: NavigationBarTheme(
+          data: NavigationBarThemeData(
+            height: 76,
+            backgroundColor: AppColors.backgroundSurface,
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            indicatorColor: AppColors.primaryContainer,
+            indicatorShape: const StadiumBorder(),
+            labelTextStyle: WidgetStateProperty.resolveWith((states) {
+              final isSelected = states.contains(WidgetState.selected);
+              return TextStyle(
+                color: isSelected
+                    ? AppColors.primaryDark
+                    : AppColors.textSecondary,
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+              );
+            }),
+            iconTheme: WidgetStateProperty.resolveWith((states) {
+              final isSelected = states.contains(WidgetState.selected);
+              return IconThemeData(
+                color: isSelected
+                    ? AppColors.primaryDark
+                    : AppColors.textSecondary,
+                size: 22,
+              );
+            }),
+          ),
+          child: NavigationBar(
+            selectedIndex: currentIndex,
+            onDestinationSelected: onDestinationSelected,
+            labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.space_dashboard_outlined),
+                selectedIcon: Icon(Icons.space_dashboard_rounded),
+                label: 'Accueil',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.task_alt_outlined),
+                selectedIcon: Icon(Icons.task_alt_rounded),
+                label: 'Tâches',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.folder_copy_outlined),
+                selectedIcon: Icon(Icons.folder_copy_rounded),
+                label: 'Projets',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.account_circle_outlined),
+                selectedIcon: Icon(Icons.account_circle_rounded),
+                label: 'Profil',
+              ),
+            ],
+          ),
         ),
-        NavigationDestination(
-          icon: Icon(Icons.folder_outlined),
-          selectedIcon: Icon(Icons.folder_rounded),
-          label: 'Projets',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.person_outline_rounded),
-          selectedIcon: Icon(Icons.person_rounded),
-          label: 'Profil',
-        ),
-      ],
+      ),
     );
   }
 }

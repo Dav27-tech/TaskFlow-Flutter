@@ -25,6 +25,16 @@ abstract class ProjectRepository {
   /// Streams the list of members for a given project.
   Stream<List<ProjectMember>> getProjectMembers(String projectId);
 
+  Stream<List<ProjectMember>> getActiveUsersNotInProject({
+    required String projectId,
+  });
+
+  Future<void> addMember({
+    required String projectId,
+    required String memberId,
+    required String currentUserId,
+  });
+
   /// Removes a member from the project (Owner only).
   Future<void> removeMember({
     required String projectId,
@@ -45,7 +55,5 @@ abstract class ProjectRepository {
   });
 
   /// Generates the JSON export and triggers file sharing.
-  Future<void> exportProjectJson({
-    required String projectId,
-  });
+  Future<void> exportProjectJson({required String projectId});
 }

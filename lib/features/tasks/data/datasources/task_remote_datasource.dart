@@ -51,6 +51,12 @@ class TaskRemoteDataSource {
 
     final now = DateTime.now();
     final reference = _tasks(projectId).doc();
+    final projectSnapshot = await firestore
+        .collection(AppConstants.projectsCollection)
+        .doc(projectId)
+        .get();
+    final projectName = projectSnapshot.data()?['name'] as String? ?? 'Projet';
+
     await reference.set(
       TaskModel(
         id: reference.id,
@@ -66,6 +72,18 @@ class TaskRemoteDataSource {
         createdBy: userId,
       ).toFirestore(),
     );
+
+    if (assignedMemberId.isNotEmpty) {
+      await _createNotification(
+        userId: assignedMemberId,
+        title: 'Nouvelle tâche assignée',
+        message:
+            'Vous avez été assigné à la tâche "$title" dans le projet "$projectName".',
+        type: 'task_assigned',
+        projectId: projectId,
+        taskId: reference.id,
+      );
+    }
   }
 
   Future<void> updateTask({
@@ -99,9 +117,34 @@ class TaskRemoteDataSource {
     required String taskId,
     required String status,
   }) async {
+    final taskSnapshot = await _tasks(projectId).doc(taskId).get();
+    final task = TaskModel.fromFirestore(taskSnapshot);
+
     await _tasks(
       projectId,
     ).doc(taskId).update({'status': status, 'updatedAt': Timestamp.now()});
+
+    if (task.assignedMemberId != null && task.assignedMemberId!.isNotEmpty) {
+      final title = status == 'completed'
+          ? 'Tâche terminée'
+          : status == 'in_progress'
+          ? 'Tâche en cours'
+          : 'Mise à jour de tâche';
+      final message = status == 'completed'
+          ? 'La tâche "${task.title}" a été marquée comme terminée.'
+          : status == 'in_progress'
+          ? 'La tâche "${task.title}" est maintenant en cours.'
+          : 'Le statut de la tâche "${task.title}" a été mis à jour.';
+
+      await _createNotification(
+        userId: task.assignedMemberId!,
+        title: title,
+        message: message,
+        type: 'task_status',
+        projectId: projectId,
+        taskId: taskId,
+      );
+    }
   }
 
   Future<void> deleteTask({
@@ -119,5 +162,28 @@ class TaskRemoteDataSource {
     if (!memberSnapshot.exists) {
       throw StateError('La tâche doit être assignée à un membre du projet.');
     }
+  }
+
+  Future<void> _createNotification({
+    required String userId,
+    required String title,
+    required String message,
+    required String type,
+    required String? projectId,
+    required String? taskId,
+  }) async {
+    final ref = firestore.collection('notifications').doc();
+    await ref.set({
+      'id': ref.id,
+      'userId': userId,
+      'title': title,
+      'message': message,
+      'type': type,
+      'projectId': projectId,
+      'taskId': taskId,
+      'isRead': false,
+      'createdAt': Timestamp.now(),
+      'readAt': null,
+    });
   }
 }

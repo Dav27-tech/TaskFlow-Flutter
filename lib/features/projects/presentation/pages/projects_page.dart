@@ -17,6 +17,7 @@ class ProjectsPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -157,17 +158,6 @@ class ProjectsPage extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              isSearch
-                  ? 'Nous n\'avons trouvé aucun projet correspondant à votre recherche.'
-                  : 'Commencez par créer votre premier projet pour organiser vos tâches et collaborer.',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-                height: 1.4,
-              ),
-            ),
             const SizedBox(height: 28),
             if (!isSearch)
               ElevatedButton.icon(

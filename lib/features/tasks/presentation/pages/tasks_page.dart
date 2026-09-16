@@ -35,6 +35,7 @@ class _TasksPageState extends ConsumerState<TasksPage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: projectsAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -684,19 +685,6 @@ class _EmptyTasks extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Créez une tâche et assignez-la à un membre du projet concerné.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
-            if (onCreateTask != null) ...[
-              const SizedBox(height: 20),
-              FilledButton.icon(
-                onPressed: onCreateTask,
-                icon: const Icon(Icons.add_rounded),
-                label: const Text('Créer une tâche'),
-              ),
-            ],
           ],
         ),
       ),

@@ -4,7 +4,7 @@ import '../models/notification_model.dart';
 
 class NotificationRemoteDataSource {
   NotificationRemoteDataSource({FirebaseFirestore? firestore})
-      : firestore = firestore ?? FirebaseFirestore.instance;
+    : firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore firestore;
 
@@ -16,9 +16,10 @@ class NotificationRemoteDataSource {
         .where('userId', isEqualTo: userId)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map(NotificationModel.fromFirestore)
-            .toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map(NotificationModel.fromFirestore).toList(),
+        );
   }
 
   Future<void> addNotification({
@@ -63,10 +64,7 @@ class NotificationRemoteDataSource {
 
     final batch = firestore.batch();
     for (final doc in snapshot.docs) {
-      batch.update(doc.reference, {
-        'isRead': true,
-        'readAt': Timestamp.now(),
-      });
+      batch.update(doc.reference, {'isRead': true, 'readAt': Timestamp.now()});
     }
     await batch.commit();
   }

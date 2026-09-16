@@ -8,6 +8,7 @@ import 'package:task_flow/features/projects/domain/entities/project.dart';
 import 'package:task_flow/features/projects/domain/entities/project_member.dart';
 import 'package:task_flow/features/projects/domain/repositories/project_repository.dart';
 import 'package:task_flow/features/projects/domain/usecases/create_project.dart';
+import 'package:task_flow/features/projects/domain/usecases/add_member.dart';
 import 'package:task_flow/features/projects/domain/usecases/delete_project.dart';
 import 'package:task_flow/features/projects/domain/usecases/export_project_json.dart';
 import 'package:task_flow/features/projects/domain/usecases/get_project.dart';
@@ -47,7 +48,9 @@ final shareServiceProvider = Provider<ShareService>((ref) {
 // DATA LAYER PROVIDERS
 // ==========================================
 
-final projectRemoteDataSourceProvider = Provider<ProjectRemoteDataSource>((ref) {
+final projectRemoteDataSourceProvider = Provider<ProjectRemoteDataSource>((
+  ref,
+) {
   return ProjectRemoteDataSourceImpl(
     firestore: ref.watch(firestoreProvider),
     auth: ref.watch(firebaseAuthProvider),
@@ -77,6 +80,10 @@ final createProjectUseCaseProvider = Provider<CreateProjectUseCase>((ref) {
   return CreateProjectUseCase(ref.watch(projectRepositoryProvider));
 });
 
+final addMemberUseCaseProvider = Provider<AddMemberUseCase>((ref) {
+  return AddMemberUseCase(ref.watch(projectRepositoryProvider));
+});
+
 final updateProjectUseCaseProvider = Provider<UpdateProjectUseCase>((ref) {
   return UpdateProjectUseCase(ref.watch(projectRepositoryProvider));
 });
@@ -85,7 +92,9 @@ final deleteProjectUseCaseProvider = Provider<DeleteProjectUseCase>((ref) {
   return DeleteProjectUseCase(ref.watch(projectRepositoryProvider));
 });
 
-final getProjectMembersUseCaseProvider = Provider<GetProjectMembersUseCase>((ref) {
+final getProjectMembersUseCaseProvider = Provider<GetProjectMembersUseCase>((
+  ref,
+) {
   return GetProjectMembersUseCase(ref.watch(projectRepositoryProvider));
 });
 
@@ -97,11 +106,16 @@ final leaveProjectUseCaseProvider = Provider<LeaveProjectUseCase>((ref) {
   return LeaveProjectUseCase(ref.watch(projectRepositoryProvider));
 });
 
-final regenerateInvitationCodeUseCaseProvider = Provider<RegenerateInvitationCodeUseCase>((ref) {
-  return RegenerateInvitationCodeUseCase(ref.watch(projectRepositoryProvider));
-});
+final regenerateInvitationCodeUseCaseProvider =
+    Provider<RegenerateInvitationCodeUseCase>((ref) {
+      return RegenerateInvitationCodeUseCase(
+        ref.watch(projectRepositoryProvider),
+      );
+    });
 
-final exportProjectJsonUseCaseProvider = Provider<ExportProjectJsonUseCase>((ref) {
+final exportProjectJsonUseCaseProvider = Provider<ExportProjectJsonUseCase>((
+  ref,
+) {
   return ExportProjectJsonUseCase(ref.watch(projectRepositoryProvider));
 });
 
@@ -126,9 +140,11 @@ class ProjectSearchQuery extends Notifier<String> {
   void setQuery(String query) => state = query;
 }
 
-final projectSearchQueryProvider = NotifierProvider<ProjectSearchQuery, String>(() {
-  return ProjectSearchQuery();
-});
+final projectSearchQueryProvider = NotifierProvider<ProjectSearchQuery, String>(
+  () {
+    return ProjectSearchQuery();
+  },
+);
 
 /// Provider for filtered projects based on search query
 final filteredProjectsProvider = Provider<AsyncValue<List<Project>>>((ref) {
@@ -145,14 +161,25 @@ final filteredProjectsProvider = Provider<AsyncValue<List<Project>>>((ref) {
 });
 
 /// Future provider for a single project details
-final projectDetailsProvider = FutureProvider.family<Project, String>((ref, projectId) async {
+final projectDetailsProvider = FutureProvider.family<Project, String>((
+  ref,
+  projectId,
+) async {
   return ref.watch(getProjectUseCaseProvider).call(projectId);
 });
 
 /// Stream provider for a project's members
-final projectMembersStreamProvider = StreamProvider.family<List<ProjectMember>, String>((ref, projectId) {
-  return ref.watch(getProjectMembersUseCaseProvider).call(projectId);
-});
+final projectMembersStreamProvider =
+    StreamProvider.family<List<ProjectMember>, String>((ref, projectId) {
+      return ref.watch(getProjectMembersUseCaseProvider).call(projectId);
+    });
+
+final activeUsersNotInProjectProvider =
+    StreamProvider.family<List<ProjectMember>, String>((ref, projectId) {
+      return ref
+          .watch(projectRepositoryProvider)
+          .getActiveUsersNotInProject(projectId: projectId);
+    });
 
 // ==========================================
 // ACTION CONTROLLER (Riverpod 3 compatible)
@@ -190,41 +217,60 @@ class ProjectActionController extends Notifier<ProjectActionState> {
     required String name,
     required String description,
   }) async {
-    state = state.copyWith(isLoading: true, errorMessage: null, successMessage: null);
+    state = state.copyWith(
+      isLoading: true,
+      errorMessage: null,
+      successMessage: null,
+    );
     try {
       final currentUserId = ref.read(currentUserIdProvider);
-      final project = await ref.read(createProjectUseCaseProvider).call(
-        name: name,
-        description: description,
-        currentUserId: currentUserId,
+      final project = await ref
+          .read(createProjectUseCaseProvider)
+          .call(
+            name: name,
+            description: description,
+            currentUserId: currentUserId,
+          );
+      state = state.copyWith(
+        isLoading: false,
+        successMessage: 'Projet créé avec succès !',
       );
-      state = state.copyWith(isLoading: false, successMessage: 'Projet créé avec succès !');
       return project;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: e.toString().replaceFirst('AppException: ', '').replaceFirst('Exception: ', ''),
+        errorMessage: e
+            .toString()
+            .replaceFirst('AppException: ', '')
+            .replaceFirst('Exception: ', ''),
       );
       return null;
     }
   }
 
-  Future<bool> updateProject({
-    required Project project,
-  }) async {
-    state = state.copyWith(isLoading: true, errorMessage: null, successMessage: null);
+  Future<bool> updateProject({required Project project}) async {
+    state = state.copyWith(
+      isLoading: true,
+      errorMessage: null,
+      successMessage: null,
+    );
     try {
       final currentUserId = ref.read(currentUserIdProvider);
-      await ref.read(updateProjectUseCaseProvider).call(
-        project: project,
-        currentUserId: currentUserId,
+      await ref
+          .read(updateProjectUseCaseProvider)
+          .call(project: project, currentUserId: currentUserId);
+      state = state.copyWith(
+        isLoading: false,
+        successMessage: 'Projet mis à jour avec succès !',
       );
-      state = state.copyWith(isLoading: false, successMessage: 'Projet mis à jour avec succès !');
       return true;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: e.toString().replaceFirst('AppException: ', '').replaceFirst('Exception: ', ''),
+        errorMessage: e
+            .toString()
+            .replaceFirst('AppException: ', '')
+            .replaceFirst('Exception: ', ''),
       );
       return false;
     }
@@ -234,20 +280,32 @@ class ProjectActionController extends Notifier<ProjectActionState> {
     required String projectId,
     required String ownerId,
   }) async {
-    state = state.copyWith(isLoading: true, errorMessage: null, successMessage: null);
+    state = state.copyWith(
+      isLoading: true,
+      errorMessage: null,
+      successMessage: null,
+    );
     try {
       final currentUserId = ref.read(currentUserIdProvider);
-      await ref.read(deleteProjectUseCaseProvider).call(
-        projectId: projectId,
-        ownerId: ownerId,
-        currentUserId: currentUserId,
+      await ref
+          .read(deleteProjectUseCaseProvider)
+          .call(
+            projectId: projectId,
+            ownerId: ownerId,
+            currentUserId: currentUserId,
+          );
+      state = state.copyWith(
+        isLoading: false,
+        successMessage: 'Projet supprimé avec succès.',
       );
-      state = state.copyWith(isLoading: false, successMessage: 'Projet supprimé avec succès.');
       return true;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: e.toString().replaceFirst('AppException: ', '').replaceFirst('Exception: ', ''),
+        errorMessage: e
+            .toString()
+            .replaceFirst('AppException: ', '')
+            .replaceFirst('Exception: ', ''),
       );
       return false;
     }
@@ -258,21 +316,70 @@ class ProjectActionController extends Notifier<ProjectActionState> {
     required String memberId,
     required String ownerId,
   }) async {
-    state = state.copyWith(isLoading: true, errorMessage: null, successMessage: null);
+    state = state.copyWith(
+      isLoading: true,
+      errorMessage: null,
+      successMessage: null,
+    );
     try {
       final currentUserId = ref.read(currentUserIdProvider);
-      await ref.read(removeMemberUseCaseProvider).call(
-        projectId: projectId,
-        memberId: memberId,
-        ownerId: ownerId,
-        currentUserId: currentUserId,
+      await ref
+          .read(removeMemberUseCaseProvider)
+          .call(
+            projectId: projectId,
+            memberId: memberId,
+            ownerId: ownerId,
+            currentUserId: currentUserId,
+          );
+      state = state.copyWith(
+        isLoading: false,
+        successMessage: 'Membre retiré avec succès.',
       );
-      state = state.copyWith(isLoading: false, successMessage: 'Membre retiré avec succès.');
       return true;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: e.toString().replaceFirst('AppException: ', '').replaceFirst('Exception: ', ''),
+        errorMessage: e
+            .toString()
+            .replaceFirst('AppException: ', '')
+            .replaceFirst('Exception: ', ''),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> addMember({
+    required String projectId,
+    required String memberId,
+    required String ownerId,
+  }) async {
+    state = state.copyWith(
+      isLoading: true,
+      errorMessage: null,
+      successMessage: null,
+    );
+    try {
+      final currentUserId = ref.read(currentUserIdProvider);
+      await ref
+          .read(addMemberUseCaseProvider)
+          .call(
+            projectId: projectId,
+            memberId: memberId,
+            ownerId: ownerId,
+            currentUserId: currentUserId,
+          );
+      state = state.copyWith(
+        isLoading: false,
+        successMessage: 'Membre ajouté avec succès.',
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e
+            .toString()
+            .replaceFirst('AppException: ', '')
+            .replaceFirst('Exception: ', ''),
       );
       return false;
     }
@@ -282,20 +389,32 @@ class ProjectActionController extends Notifier<ProjectActionState> {
     required String projectId,
     required String ownerId,
   }) async {
-    state = state.copyWith(isLoading: true, errorMessage: null, successMessage: null);
+    state = state.copyWith(
+      isLoading: true,
+      errorMessage: null,
+      successMessage: null,
+    );
     try {
       final currentUserId = ref.read(currentUserIdProvider);
-      await ref.read(leaveProjectUseCaseProvider).call(
-        projectId: projectId,
-        ownerId: ownerId,
-        currentUserId: currentUserId,
+      await ref
+          .read(leaveProjectUseCaseProvider)
+          .call(
+            projectId: projectId,
+            ownerId: ownerId,
+            currentUserId: currentUserId,
+          );
+      state = state.copyWith(
+        isLoading: false,
+        successMessage: 'Vous avez quitté le projet.',
       );
-      state = state.copyWith(isLoading: false, successMessage: 'Vous avez quitté le projet.');
       return true;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: e.toString().replaceFirst('AppException: ', '').replaceFirst('Exception: ', ''),
+        errorMessage: e
+            .toString()
+            .replaceFirst('AppException: ', '')
+            .replaceFirst('Exception: ', ''),
       );
       return false;
     }
@@ -305,37 +424,59 @@ class ProjectActionController extends Notifier<ProjectActionState> {
     required String projectId,
     required String ownerId,
   }) async {
-    state = state.copyWith(isLoading: true, errorMessage: null, successMessage: null);
+    state = state.copyWith(
+      isLoading: true,
+      errorMessage: null,
+      successMessage: null,
+    );
     try {
       final currentUserId = ref.read(currentUserIdProvider);
-      final newCode = await ref.read(regenerateInvitationCodeUseCaseProvider).call(
-        projectId: projectId,
-        ownerId: ownerId,
-        currentUserId: currentUserId,
+      final newCode = await ref
+          .read(regenerateInvitationCodeUseCaseProvider)
+          .call(
+            projectId: projectId,
+            ownerId: ownerId,
+            currentUserId: currentUserId,
+          );
+      state = state.copyWith(
+        isLoading: false,
+        successMessage: 'Code d\'invitation régénéré avec succès !',
       );
-      state = state.copyWith(isLoading: false, successMessage: 'Code d\'invitation régénéré avec succès !');
       return newCode;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: e.toString().replaceFirst('AppException: ', '').replaceFirst('Exception: ', ''),
+        errorMessage: e
+            .toString()
+            .replaceFirst('AppException: ', '')
+            .replaceFirst('Exception: ', ''),
       );
       return null;
     }
   }
 
-  Future<bool> exportProjectTasksJson({
-    required String projectId,
-  }) async {
-    state = state.copyWith(isLoading: true, errorMessage: null, successMessage: null);
+  Future<bool> exportProjectTasksJson({required String projectId}) async {
+    state = state.copyWith(
+      isLoading: true,
+      errorMessage: null,
+      successMessage: null,
+    );
     try {
-      await ref.read(exportProjectJsonUseCaseProvider).call(projectId: projectId);
-      state = state.copyWith(isLoading: false, successMessage: 'Tâches exportées avec succès.');
+      await ref
+          .read(exportProjectJsonUseCaseProvider)
+          .call(projectId: projectId);
+      state = state.copyWith(
+        isLoading: false,
+        successMessage: 'Tâches exportées avec succès.',
+      );
       return true;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: e.toString().replaceFirst('AppException: ', '').replaceFirst('Exception: ', ''),
+        errorMessage: e
+            .toString()
+            .replaceFirst('AppException: ', '')
+            .replaceFirst('Exception: ', ''),
       );
       return false;
     }
@@ -344,5 +485,5 @@ class ProjectActionController extends Notifier<ProjectActionState> {
 
 final projectActionControllerProvider =
     NotifierProvider<ProjectActionController, ProjectActionState>(() {
-  return ProjectActionController();
-});
+      return ProjectActionController();
+    });
