@@ -44,12 +44,20 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
   @override
   Widget build(BuildContext context) {
     final currentUserId = ref.watch(currentUserIdProvider);
-    final projectDetailsAsync = ref.watch(projectDetailsProvider(widget.projectId));
-    final membersAsync = ref.watch(projectMembersStreamProvider(widget.projectId));
+    final projectDetailsAsync = ref.watch(
+      projectDetailsProvider(widget.projectId),
+    );
+    final membersAsync = ref.watch(
+      projectMembersStreamProvider(widget.projectId),
+    );
 
     // Listen to action controller messages
-    ref.listen<ProjectActionState>(projectActionControllerProvider, (prev, next) {
-      if (next.errorMessage != null && next.errorMessage != prev?.errorMessage) {
+    ref.listen<ProjectActionState>(projectActionControllerProvider, (
+      prev,
+      next,
+    ) {
+      if (next.errorMessage != null &&
+          next.errorMessage != prev?.errorMessage) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.errorMessage!),
@@ -58,7 +66,8 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
           ),
         );
       }
-      if (next.successMessage != null && next.successMessage != prev?.successMessage) {
+      if (next.successMessage != null &&
+          next.successMessage != prev?.successMessage) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.successMessage!),
@@ -70,17 +79,37 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
     });
 
     return projectDetailsAsync.when(
-      data: (project) => _buildContent(context, project, currentUserId, membersAsync),
+      data: (project) =>
+          _buildContent(context, project, currentUserId, membersAsync),
       loading: () => widget.initialProject != null
-          ? _buildContent(context, widget.initialProject!, currentUserId, membersAsync)
+          ? _buildContent(
+              context,
+              widget.initialProject!,
+              currentUserId,
+              membersAsync,
+            )
           : const Scaffold(
               body: LoadingIndicator(message: 'Loading project details...'),
             ),
       error: (error, stack) => Scaffold(
-        appBar: AppBar(title: const Text('Project Details')),
+        appBar: AppBar(
+          toolbarHeight: 62,
+          backgroundColor: AppColors.backgroundSurface,
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+          title: const Text(
+            'Détails du projet',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
         body: ErrorView(
           message: error.toString().replaceFirst('AppException: ', ''),
-          onRetry: () => ref.invalidate(projectDetailsProvider(widget.projectId)),
+          onRetry: () =>
+              ref.invalidate(projectDetailsProvider(widget.projectId)),
         ),
       ),
     );
@@ -97,7 +126,20 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
-        title: Text(project.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+        toolbarHeight: 62,
+        backgroundColor: AppColors.backgroundSurface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        title: const Text(
+          'Détails du projet',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
         actions: [
           ProjectMenu(
             isOwner: isOwner,
@@ -119,10 +161,7 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: ProjectSummary(
-                  project: project,
-                  isOwner: isOwner,
-                ),
+                child: ProjectSummary(project: project, isOwner: isOwner),
               ),
             ),
             SliverPersistentHeader(
@@ -133,11 +172,11 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
                   tabs: const [
                     Tab(
                       icon: Icon(Icons.check_box_outlined, size: 20),
-                      text: 'Tasks',
+                      text: 'Tâches',
                     ),
                     Tab(
                       icon: Icon(Icons.people_alt_outlined, size: 20),
-                      text: 'Members',
+                      text: 'Membres',
                     ),
                   ],
                 ),
@@ -165,7 +204,7 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Tasks (${project.tasksCount})',
+                'Tâches (${project.tasksCount})',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -175,7 +214,7 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
               TextButton.icon(
                 onPressed: () => _handleExportJson(project.id),
                 icon: const Icon(Icons.file_download_outlined, size: 18),
-                label: const Text('Export JSON'),
+                label: const Text('Exporter JSON'),
               ),
             ],
           ),
@@ -206,7 +245,7 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      '${project.completedTasksCount} of ${project.tasksCount} tasks completed',
+                      '${project.completedTasksCount} sur ${project.tasksCount} tâches terminées',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -215,7 +254,7 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
                     ),
                     const SizedBox(height: 6),
                     const Text(
-                      'Tasks are managed collaboratively by project members.',
+                      'Les tâches sont gérées en collaboration par les membres du projet.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 13,
@@ -246,7 +285,7 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Project Members',
+                'Membres du projet',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -256,10 +295,13 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
               if (isOwner)
                 TextButton.icon(
                   onPressed: () {
-                    context.push('/projects/${project.id}/members', extra: project);
+                    context.push(
+                      '/projects/${project.id}/members',
+                      extra: project,
+                    );
                   },
                   icon: const Icon(Icons.settings_outlined, size: 18),
-                  label: const Text('Manage'),
+                  label: const Text('Gérer'),
                 ),
             ],
           ),
@@ -268,7 +310,7 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
             child: membersAsync.when(
               data: (members) {
                 if (members.isEmpty) {
-                  return const Center(child: Text('No members found.'));
+                  return const Center(child: Text('Aucun membre trouvé.'));
                 }
                 return ListView.builder(
                   itemCount: members.length,
@@ -277,7 +319,8 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
                     return MemberTile(
                       member: member,
                       isCurrentUserManager: isOwner,
-                      onRemove: () => _handleRemoveMember(project, member.userId),
+                      onRemove: () =>
+                          _handleRemoveMember(project, member.userId),
                     );
                   },
                 );
@@ -285,7 +328,8 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
               loading: () => const LoadingIndicator(size: 24),
               error: (err, _) => ErrorView(
                 message: err.toString(),
-                onRetry: () => ref.invalidate(projectMembersStreamProvider(project.id)),
+                onRetry: () =>
+                    ref.invalidate(projectMembersStreamProvider(project.id)),
               ),
             ),
           ),
@@ -295,17 +339,18 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
   }
 
   void _handleExportJson(String projectId) async {
-    await ref.read(projectActionControllerProvider.notifier).exportProjectTasksJson(
-          projectId: projectId,
-        );
+    await ref
+        .read(projectActionControllerProvider.notifier)
+        .exportProjectTasksJson(projectId: projectId);
   }
 
   void _handleDeleteProject(Project project) async {
     final confirmed = await ConfirmDialog.show(
       context,
-      title: 'Delete Project',
-      content: 'Are you sure you want to delete "${project.name}"? This action cannot be undone and all tasks will be permanently removed.',
-      confirmText: 'Delete',
+      title: 'Supprimer le projet',
+      content:
+          'Êtes-vous sûr de vouloir supprimer "${project.name}" ? Cette action est irréversible et toutes les tâches seront définitivement supprimées.',
+      confirmText: 'Supprimer',
       isDestructive: true,
     );
 
@@ -323,9 +368,10 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
   void _handleLeaveProject(Project project) async {
     final confirmed = await ConfirmDialog.show(
       context,
-      title: 'Leave Project',
-      content: 'Are you sure you want to leave "${project.name}"? You will lose access to this project and its tasks.',
-      confirmText: 'Leave',
+      title: 'Quitter le projet',
+      content:
+          'Êtes-vous sûr de vouloir quitter "${project.name}" ? Vous perdrez l\'accès à ce projet et à ses tâches.',
+      confirmText: 'Quitter',
       isDestructive: true,
     );
 
@@ -343,15 +389,17 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage>
   void _handleRemoveMember(Project project, String memberId) async {
     final confirmed = await ConfirmDialog.show(
       context,
-      title: 'Remove Member',
-      content: 'Are you sure you want to remove this member from this project?',
-      confirmText: 'Remove Member',
-      cancelText: 'Cancel',
+      title: 'Retirer le membre',
+      content: 'Êtes-vous sûr de vouloir retirer ce membre de ce projet ?',
+      confirmText: 'Retirer',
+      cancelText: 'Annuler',
       isDestructive: true,
     );
 
     if (confirmed == true) {
-      await ref.read(projectActionControllerProvider.notifier).removeMember(
+      await ref
+          .read(projectActionControllerProvider.notifier)
+          .removeMember(
             projectId: project.id,
             memberId: memberId,
             ownerId: project.ownerId,
@@ -371,11 +419,12 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => tabBar.preferredSize.height;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: Colors.white,
-      child: tabBar,
-    );
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(color: Colors.white, child: tabBar);
   }
 
   @override

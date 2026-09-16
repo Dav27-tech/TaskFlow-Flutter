@@ -51,7 +51,7 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
-        title: Text(widget.isEditMode ? 'Edit Project' : 'New Project'),
+        title: Text(widget.isEditMode ? 'Modifier le projet' : 'Nouveau projet', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -60,47 +60,18 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Info Card for Creator Rule
-              if (!widget.isEditMode) ...[
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryContainer.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.3)),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.info_outline_rounded, color: AppColors.primary, size: 22),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'You will automatically be assigned as the OWNER of this project upon creation.',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: AppColors.primaryDark,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-              ],
-
               // Project Name Field
               CustomTextField(
                 controller: _nameController,
-                label: 'Project Name *',
-                hintText: 'e.g. Mobile App Redesign',
+                label: 'Nom du projet *',
+                hintText: 'Nom du projet ...',
                 prefixIcon: const Icon(Icons.folder_outlined, color: AppColors.textSecondary),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a project name';
+                    return 'Veuillez entrer un nom de projet';
                   }
                   if (value.trim().length < 3) {
-                    return 'Project name must be at least 3 characters long';
+                    return 'Le nom du projet doit contenir au moins 5 caractères';
                   }
                   return null;
                 },
@@ -111,7 +82,7 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
               CustomTextField(
                 controller: _descriptionController,
                 label: 'Description',
-                hintText: 'Describe the main goals and scope of this project...',
+                hintText: 'Décription du projet ...',
                 maxLines: 4,
                 minLines: 3,
               ),
@@ -120,7 +91,7 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
               // Status Dropdown (Edit mode only)
               if (widget.isEditMode) ...[
                 const Text(
-                  'Status',
+                  'Statut',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -140,10 +111,10 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
                       value: _selectedStatus,
                       isExpanded: true,
                       items: const [
-                        DropdownMenuItem(value: 'active', child: Text('Active')),
-                        DropdownMenuItem(value: 'in_progress', child: Text('In Progress')),
-                        DropdownMenuItem(value: 'completed', child: Text('Completed')),
-                        DropdownMenuItem(value: 'archived', child: Text('Archived')),
+                        DropdownMenuItem(value: 'active', child: Text('Actif')),
+                        DropdownMenuItem(value: 'in_progress', child: Text('En cours')),
+                        DropdownMenuItem(value: 'completed', child: Text('Terminé')),
+                        DropdownMenuItem(value: 'archived', child: Text('Archivé')),
                       ],
                       onChanged: (value) {
                         if (value != null) {
@@ -162,16 +133,16 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
 
               // Action Buttons
               CustomButton(
-                text: widget.isEditMode ? 'Save Changes' : 'Create Project',
+                text: widget.isEditMode ? 'Enregistrer les modifications' : 'Créer le projet',
                 isLoading: actionState.isLoading,
                 icon: widget.isEditMode ? Icons.check_rounded : Icons.add_rounded,
                 onPressed: _handleSubmit,
               ),
               const SizedBox(height: 12),
               CustomButton(
-                text: 'Cancel',
+                text: 'Annuler',
                 isOutlined: true,
-                backgroundColor: AppColors.textSecondary,
+                backgroundColor: AppColors.errorSoft,
                 onPressed: () => context.pop(),
               ),
             ],

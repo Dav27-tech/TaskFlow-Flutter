@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/constants/app_colors.dart';
 import 'router/app_router.dart';
 
 class TaskFlowApp extends StatelessWidget {
@@ -15,10 +16,10 @@ class TaskFlowApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'Roboto',
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2878E8),
+          seedColor: AppColors.primary,
           brightness: Brightness.light,
         ),
-        scaffoldBackgroundColor: const Color(0xFFF7F9FC),
+        scaffoldBackgroundColor: AppColors.backgroundLight,
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Colors.white,
@@ -39,14 +40,14 @@ class TaskFlowApp extends StatelessWidget {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Color(0xFF2878E8), width: 1.5),
+            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
           ),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF2878E8),
+            backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
-            disabledBackgroundColor: const Color(0xFFAFC6F5),
+            disabledBackgroundColor: AppColors.primaryLight,
             minimumSize: const Size.fromHeight(54),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),

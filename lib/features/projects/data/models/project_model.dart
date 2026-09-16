@@ -17,6 +17,37 @@ class ProjectModel extends Project {
     super.membersCount,
   });
 
+  @override
+  ProjectModel copyWith({
+    String? id,
+    String? name,
+    String? description,
+    String? ownerId,
+    String? invitationCode,
+    String? status,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    List<String>? memberIds,
+    int? tasksCount,
+    int? completedTasksCount,
+    int? membersCount,
+  }) {
+    return ProjectModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      ownerId: ownerId ?? this.ownerId,
+      invitationCode: invitationCode ?? this.invitationCode,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      memberIds: memberIds ?? this.memberIds,
+      tasksCount: tasksCount ?? this.tasksCount,
+      completedTasksCount: completedTasksCount ?? this.completedTasksCount,
+      membersCount: membersCount ?? this.membersCount,
+    );
+  }
+
   factory ProjectModel.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? {};
     return ProjectModel(

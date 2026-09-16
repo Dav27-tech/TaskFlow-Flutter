@@ -55,7 +55,7 @@ class ProjectSummary extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      isOwner ? 'OWNER' : 'MEMBER',
+                      isOwner ? 'PROPRIÉTAIRE' : 'MEMBRE',
                       style: TextStyle(
                         color: isOwner
                             ? AppColors.ownerBadgeText
@@ -107,117 +107,106 @@ class ProjectSummary extends StatelessWidget {
               ),
             ),
           ],
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
-          // Progress Section
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Overall Progress',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              Text(
-                '${project.progressPercentage}%',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: LinearProgressIndicator(
-              value: project.progressRatio,
-              minHeight: 8,
-              backgroundColor: AppColors.divider,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                project.progressRatio == 1.0 ? AppColors.success : AppColors.primary,
-              ),
+          // Metrics Grid (Circular style like image)
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+            decoration: BoxDecoration(
+              color: AppColors.backgroundLight.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(16),
             ),
-          ),
-          const SizedBox(height: 20),
-
-          // Metrics Grid
-          Row(
-            children: [
-              Expanded(
-                child: _buildMetricCard(
-                  icon: Icons.task_alt_rounded,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildCircularMetric(
+                  value: '${project.progressPercentage}%',
+                  label: 'Progression',
                   color: AppColors.primary,
-                  title: 'Total Tasks',
+                  progress: project.progressRatio,
+                ),
+                _buildCircularMetric(
                   value: '${project.tasksCount}',
+                  label: 'Total Tâches',
+                  color: AppColors.textSecondary,
+                  icon: Icons.task_outlined,
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildMetricCard(
-                  icon: Icons.check_circle_rounded,
-                  color: AppColors.success,
-                  title: 'Completed',
+                _buildCircularMetric(
                   value: '${project.completedTasksCount}',
+                  label: 'Terminées',
+                  color: AppColors.success,
+                  icon: Icons.check_circle_outline_rounded,
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildMetricCard(
-                  icon: Icons.groups_rounded,
-                  color: AppColors.secondary,
-                  title: 'Members',
+                _buildCircularMetric(
                   value: '${project.membersCount > 0 ? project.membersCount : (project.memberIds.isNotEmpty ? project.memberIds.length : 1)}',
+                  label: 'Membres',
+                  color: AppColors.secondary,
+                  icon: Icons.people_outline_rounded,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMetricCard({
-    required IconData icon,
-    required Color color,
-    required String title,
+  Widget _buildCircularMetric({
     required String value,
+    required String label,
+    required Color color,
+    double? progress,
+    IconData? icon,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundLight,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, size: 20, color: color),
-          const SizedBox(height: 6),
+    return Column(
+      children: [
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            SizedBox(
+              width: 54,
+              height: 54,
+              child: CircularProgressIndicator(
+                value: progress ?? 1.0,
+                strokeWidth: 3.5,
+                backgroundColor: AppColors.divider,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  progress != null ? color : color.withValues(alpha: 0.2),
+                ),
+              ),
+            ),
+            if (icon != null)
+              Icon(icon, size: 20, color: color)
+            else
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        if (icon != null)
           Text(
             value,
             style: const TextStyle(
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
               color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 2),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 11,
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w500,
-            ),
-            textAlign: TextAlign.center,
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 10,
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w500,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

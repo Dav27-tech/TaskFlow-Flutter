@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:task_flow/core/constants/app_constants.dart';
 import 'package:task_flow/core/errors/exceptions.dart';
 import 'package:task_flow/features/projects/data/models/project_member_model.dart';
@@ -69,30 +70,41 @@ class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
       }
 
       // Fetch task statistics
-      final tasksSnapshot = await _projectsCollection
-          .doc(projectId)
-          .collection(AppConstants.tasksSubcollection)
-          .get();
+      int totalTasks = 0;
+      int completedTasks = 0;
+      try {
+        final tasksSnapshot = await _projectsCollection
+            .doc(projectId)
+            .collection(AppConstants.tasksSubcollection)
+            .get();
 
-      final totalTasks = tasksSnapshot.docs.length;
-      final completedTasks = tasksSnapshot.docs.where((taskDoc) {
-        final status = taskDoc.data()['status'] as String? ?? '';
-        return status == 'completed' || status == 'done';
-      }).length;
+        totalTasks = tasksSnapshot.docs.length;
+        completedTasks = tasksSnapshot.docs.where((taskDoc) {
+          final status = taskDoc.data()['status'] as String? ?? '';
+          return status == 'completed' || status == 'done';
+        }).length;
+      } catch (e) {
+        debugPrint('Warning: Failed to fetch tasks stats for project $projectId: $e');
+      }
 
       // Fetch members count
-      final membersSnapshot = await _projectsCollection
-          .doc(projectId)
-          .collection(AppConstants.membersSubcollection)
-          .get();
-      final membersCount = membersSnapshot.docs.length;
+      int membersCount = 0;
+      try {
+        final membersSnapshot = await _projectsCollection
+            .doc(projectId)
+            .collection(AppConstants.membersSubcollection)
+            .get();
+        membersCount = membersSnapshot.docs.length;
+      } catch (e) {
+        debugPrint('Warning: Failed to fetch members count for project $projectId: $e');
+      }
 
       final project = ProjectModel.fromFirestore(doc);
       return project.copyWith(
         tasksCount: totalTasks,
         completedTasksCount: completedTasks,
         membersCount: membersCount,
-      ) as ProjectModel;
+      );
     } on AppException {
       rethrow;
     } catch (e) {
@@ -108,41 +120,42 @@ class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
     required String invitationCode,
   }) async {
     try {
+      final currentUser = auth.currentUser;
+      if (currentUser == null) {
+        throw const AuthException('No authenticated user found.');
+      }
+      
+      // Safety check: ensure the provided ID matches the logged in user
+      final authenticatedUserId = currentUser.uid;
+      
       final now = DateTime.now();
       final projectDocRef = _projectsCollection.doc();
       final memberDocRef = projectDocRef
           .collection(AppConstants.membersSubcollection)
-          .doc(currentUserId);
+          .doc(authenticatedUserId);
 
       final project = ProjectModel(
         id: projectDocRef.id,
         name: name,
         description: description,
-        ownerId: currentUserId,
+        ownerId: authenticatedUserId,
         invitationCode: invitationCode,
         status: AppConstants.statusActive,
         createdAt: now,
         updatedAt: now,
-        memberIds: [currentUserId],
+        memberIds: [authenticatedUserId],
         membersCount: 1,
         tasksCount: 0,
         completedTasksCount: 0,
       );
 
       // Fetch user profile if available
-      String? displayName;
-      String? email;
-      String? photoUrl;
-
-      final currentUser = auth.currentUser;
-      if (currentUser != null && currentUser.uid == currentUserId) {
-        displayName = currentUser.displayName;
-        email = currentUser.email;
-        photoUrl = currentUser.photoURL;
-      }
+      final displayName = currentUser.displayName;
+      final email = currentUser.email;
+      final photoUrl = currentUser.photoURL;
 
       final member = ProjectMemberModel(
-        userId: currentUserId,
+        userId: authenticatedUserId,
         role: AppConstants.roleOwner,
         joinedAt: now,
         displayName: displayName,

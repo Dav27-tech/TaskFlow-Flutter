@@ -61,7 +61,7 @@ class ProjectMenu extends StatelessWidget {
                 children: [
                   Icon(Icons.edit_outlined, size: 20, color: AppColors.textPrimary),
                   SizedBox(width: 12),
-                  Text('Edit Project', style: TextStyle(fontSize: 14)),
+                  Text('Modifier le projet', style: TextStyle(fontSize: 14)),
                 ],
               ),
             ),
@@ -71,7 +71,7 @@ class ProjectMenu extends StatelessWidget {
                 children: [
                   Icon(Icons.group_outlined, size: 20, color: AppColors.textPrimary),
                   SizedBox(width: 12),
-                  Text('Manage Members', style: TextStyle(fontSize: 14)),
+                  Text('Gérer les membres', style: TextStyle(fontSize: 14)),
                 ],
               ),
             ),
@@ -81,7 +81,7 @@ class ProjectMenu extends StatelessWidget {
                 children: [
                   Icon(Icons.file_download_outlined, size: 20, color: AppColors.textPrimary),
                   SizedBox(width: 12),
-                  Text('Export Tasks as JSON', style: TextStyle(fontSize: 14)),
+                  Text('Exporter en JSON', style: TextStyle(fontSize: 14)),
                 ],
               ),
             ),
@@ -92,7 +92,7 @@ class ProjectMenu extends StatelessWidget {
                 children: [
                   Icon(Icons.delete_outline_rounded, size: 20, color: AppColors.error),
                   SizedBox(width: 12),
-                  Text('Delete Project',
+                  Text('Supprimer le projet',
                       style: TextStyle(fontSize: 14, color: AppColors.error)),
                 ],
               ),
@@ -106,7 +106,7 @@ class ProjectMenu extends StatelessWidget {
                 children: [
                   Icon(Icons.file_download_outlined, size: 20, color: AppColors.textPrimary),
                   SizedBox(width: 12),
-                  Text('Export Tasks as JSON', style: TextStyle(fontSize: 14)),
+                  Text('Exporter en JSON', style: TextStyle(fontSize: 14)),
                 ],
               ),
             ),
@@ -117,7 +117,7 @@ class ProjectMenu extends StatelessWidget {
                 children: [
                   Icon(Icons.logout_rounded, size: 20, color: AppColors.error),
                   SizedBox(width: 12),
-                  Text('Leave Project',
+                  Text('Quitter le projet',
                       style: TextStyle(fontSize: 14, color: AppColors.error)),
                 ],
               ),

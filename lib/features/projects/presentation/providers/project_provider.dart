@@ -35,7 +35,7 @@ final authStateProvider = StreamProvider<User?>((ref) {
 });
 
 final currentUserIdProvider = Provider<String>((ref) {
-  final user = ref.watch(firebaseAuthProvider).currentUser;
+  final user = ref.watch(authStateProvider).value;
   return user?.uid ?? '';
 });
 
@@ -118,6 +118,32 @@ final projectsStreamProvider = StreamProvider<List<Project>>((ref) {
   return ref.watch(getProjectsUseCaseProvider).call(userId: userId);
 });
 
+/// Provider for the search query in projects page
+class ProjectSearchQuery extends Notifier<String> {
+  @override
+  String build() => '';
+
+  void setQuery(String query) => state = query;
+}
+
+final projectSearchQueryProvider = NotifierProvider<ProjectSearchQuery, String>(() {
+  return ProjectSearchQuery();
+});
+
+/// Provider for filtered projects based on search query
+final filteredProjectsProvider = Provider<AsyncValue<List<Project>>>((ref) {
+  final projectsAsync = ref.watch(projectsStreamProvider);
+  final searchQuery = ref.watch(projectSearchQueryProvider).toLowerCase();
+
+  return projectsAsync.whenData((projects) {
+    if (searchQuery.isEmpty) return projects;
+    return projects.where((project) {
+      return project.name.toLowerCase().contains(searchQuery) ||
+          project.description.toLowerCase().contains(searchQuery);
+    }).toList();
+  });
+});
+
 /// Future provider for a single project details
 final projectDetailsProvider = FutureProvider.family<Project, String>((ref, projectId) async {
   return ref.watch(getProjectUseCaseProvider).call(projectId);
@@ -172,7 +198,7 @@ class ProjectActionController extends Notifier<ProjectActionState> {
         description: description,
         currentUserId: currentUserId,
       );
-      state = state.copyWith(isLoading: false, successMessage: 'Project created successfully!');
+      state = state.copyWith(isLoading: false, successMessage: 'Projet créé avec succès !');
       return project;
     } catch (e) {
       state = state.copyWith(
@@ -193,7 +219,7 @@ class ProjectActionController extends Notifier<ProjectActionState> {
         project: project,
         currentUserId: currentUserId,
       );
-      state = state.copyWith(isLoading: false, successMessage: 'Project updated successfully!');
+      state = state.copyWith(isLoading: false, successMessage: 'Projet mis à jour avec succès !');
       return true;
     } catch (e) {
       state = state.copyWith(
@@ -216,7 +242,7 @@ class ProjectActionController extends Notifier<ProjectActionState> {
         ownerId: ownerId,
         currentUserId: currentUserId,
       );
-      state = state.copyWith(isLoading: false, successMessage: 'Project deleted successfully.');
+      state = state.copyWith(isLoading: false, successMessage: 'Projet supprimé avec succès.');
       return true;
     } catch (e) {
       state = state.copyWith(
@@ -241,7 +267,7 @@ class ProjectActionController extends Notifier<ProjectActionState> {
         ownerId: ownerId,
         currentUserId: currentUserId,
       );
-      state = state.copyWith(isLoading: false, successMessage: 'Member removed successfully.');
+      state = state.copyWith(isLoading: false, successMessage: 'Membre retiré avec succès.');
       return true;
     } catch (e) {
       state = state.copyWith(
@@ -264,7 +290,7 @@ class ProjectActionController extends Notifier<ProjectActionState> {
         ownerId: ownerId,
         currentUserId: currentUserId,
       );
-      state = state.copyWith(isLoading: false, successMessage: 'You have left the project.');
+      state = state.copyWith(isLoading: false, successMessage: 'Vous avez quitté le projet.');
       return true;
     } catch (e) {
       state = state.copyWith(
@@ -287,7 +313,7 @@ class ProjectActionController extends Notifier<ProjectActionState> {
         ownerId: ownerId,
         currentUserId: currentUserId,
       );
-      state = state.copyWith(isLoading: false, successMessage: 'Invitation code regenerated successfully!');
+      state = state.copyWith(isLoading: false, successMessage: 'Code d\'invitation régénéré avec succès !');
       return newCode;
     } catch (e) {
       state = state.copyWith(
@@ -304,7 +330,7 @@ class ProjectActionController extends Notifier<ProjectActionState> {
     state = state.copyWith(isLoading: true, errorMessage: null, successMessage: null);
     try {
       await ref.read(exportProjectJsonUseCaseProvider).call(projectId: projectId);
-      state = state.copyWith(isLoading: false, successMessage: 'Tasks exported successfully.');
+      state = state.copyWith(isLoading: false, successMessage: 'Tâches exportées avec succès.');
       return true;
     } catch (e) {
       state = state.copyWith(
